@@ -111,6 +111,14 @@ export default defineConfig({
     port: 5173,
     open: true,
   },
+  test: {
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      'tests/e2e/**',
+    ],
+    environment: 'node',
+  },
   build: {
     target: 'ES2020',
     minify: 'terser',

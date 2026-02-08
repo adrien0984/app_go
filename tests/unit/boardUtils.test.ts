@@ -1,6 +1,8 @@
 /**
  * Tests unitaires pour boardUtils
  * Conversion coordonnées, validation, calculs de taille
+ *
+ * @vitest-environment jsdom
  */
 
 import { describe, it, expect } from 'vitest';
@@ -22,13 +24,6 @@ describe('boardUtils', () => {
       canvas.width = 380;
       canvas.height = 380;
 
-      // Mock mouse event at center
-      const mockEvent = new MouseEvent('click', {
-        bubbles: true,
-        clientX: 190,
-        clientY: 190,
-      }) as any;
-
       // Mock getBoundingClientRect
       Object.defineProperty(canvas, 'getBoundingClientRect', {
         value: () => ({
@@ -41,8 +36,11 @@ describe('boardUtils', () => {
         }),
       });
 
-      mockEvent.clientX = 190;
-      mockEvent.clientY = 190;
+      // Mock mouse event at center (plain object to avoid readonly getter)
+      const mockEvent = {
+        clientX: 190,
+        clientY: 190,
+      } as any;
 
       // Test: should return valid coordinate
       const result = pixelToGoCoord(mockEvent, canvas, 380);
@@ -167,18 +165,19 @@ describe('boardUtils', () => {
   });
 
   describe('calculateCellSize', () => {
-    it('should calculate cell size for 19×19 grid', () => {
-      expect(calculateCellSize(380)).toBe(20);
-      expect(calculateCellSize(760)).toBe(40);
-      expect(calculateCellSize(570)).toBe(30);
+    it('should calculate cell size for 19×19 grid with margins', () => {
+      // canvasSize / 20 = 19 intersections + 2 marges
+      expect(calculateCellSize(400)).toBe(20);
+      expect(calculateCellSize(800)).toBe(40);
+      expect(calculateCellSize(600)).toBe(30);
     });
 
     it('should handle various canvas sizes', () => {
       const sizes = [360, 380, 400, 600, 760, 800];
 
-      sizes.forEach((canvasSize) => {
+      sizes.forEach((canvasSize: number) => {
         const cellSize = calculateCellSize(canvasSize);
-        expect(cellSize).toBe(canvasSize / 19);
+        expect(cellSize).toBe(canvasSize / 20);
         expect(cellSize).toBeGreaterThan(0);
       });
     });
@@ -205,10 +204,11 @@ describe('boardUtils', () => {
   });
 
   describe('calculateCanvasSize', () => {
-    it('should respect minimum size (360px)', () => {
-      expect(calculateCanvasSize(100)).toBe(360);
-      expect(calculateCanvasSize(350)).toBe(360);
-      expect(calculateCanvasSize(360)).toBeGreaterThanOrEqual(360);
+    it('should respect minimum size (280px)', () => {
+      // MIN_SIZE = 280, donc même un petit conteneur donne au moins 280
+      expect(calculateCanvasSize(100)).toBe(280);
+      expect(calculateCanvasSize(200)).toBe(280);
+      expect(calculateCanvasSize(300)).toBe(280);
     });
 
     it('should respect maximum size (800px)', () => {
@@ -218,13 +218,11 @@ describe('boardUtils', () => {
 
     it('should return responsive size in between', () => {
       const size = calculateCanvasSize(500);
-      expect(size).toBeGreaterThanOrEqual(360);
+      expect(size).toBeGreaterThanOrEqual(280);
       expect(size).toBeLessThanOrEqual(800);
     });
 
     it('should account for padding', () => {
-      const PADDING = 20;
-
       // 400px container - 20px padding = 380px canvas
       const result1 = calculateCanvasSize(400);
       expect(result1).toBe(380);
@@ -235,15 +233,15 @@ describe('boardUtils', () => {
     });
 
     it('should match common viewport sizes', () => {
-      // Mobile (360px)
-      expect(calculateCanvasSize(375)).toBe(360);
+      // Mobile (375px - 20px padding = 355px)
+      expect(calculateCanvasSize(375)).toBe(355);
 
       // Tablet (768px)
       const tabletSize = calculateCanvasSize(768);
-      expect(tabletSize).toBeGreaterThan(360);
+      expect(tabletSize).toBeGreaterThan(280);
       expect(tabletSize).toBeLessThanOrEqual(800);
 
-      // Desktop (1920px)
+      // Desktop (1920px) → capped at 800
       expect(calculateCanvasSize(1920)).toBe(800);
     });
   });

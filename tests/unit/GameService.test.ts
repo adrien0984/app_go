@@ -372,13 +372,17 @@ describe('GameService', () => {
       expect(hash1).not.toBe(hash2);
     });
 
-    it('should be compact (361 chars for 19x19)', () => {
+    it('should be compact for 19x19 board', () => {
       game = GameService.addMove(game, { x: 0, y: 0 });
       const state = GameService.getBoardState(game, 0);
       const hash = GameService.getBoardHash(state);
 
-      // 361 cells (19*19), each is '.', 'B', or 'W'
+      // board.flat().join('') produit 'null' pour cases vides, puis replace → '.'
+      // 1 coup B + 360 cases vides → 'B' + 360 × '.' = 361 chars
       expect(hash.length).toBe(361);
+      expect(hash).toContain('B');
+      expect(hash).toContain('.');
+      expect(hash).not.toContain('null');
     });
   });
 

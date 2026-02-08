@@ -237,7 +237,9 @@ export class GameService {
    * const hash = GameService.getBoardHash(state);
    */
   static getBoardHash(boardState: BoardState): string {
-    const flat = boardState.board.flat().join('');
-    return flat.replace(/null/g, '.');
+    return boardState.board
+      .flat()
+      .map((cell: 'B' | 'W' | null) => cell ?? '.')
+      .join('');
   }
 }
