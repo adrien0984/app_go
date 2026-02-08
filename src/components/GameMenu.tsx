@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { v4 as uuidv4 } from 'uuid';
 import { setCurrentGame, addGameToList } from '@store/slices/gameSlice';
 import type { Game } from '@/types/game';
 import StorageService from '@services/StorageService';
+import { SGFService } from '@services/SGFService';
 import './GameMenu.css';
 
 interface GameMenuProps {
@@ -22,6 +23,8 @@ const GameMenu: React.FC<GameMenuProps> = ({ onGameSelected }) => {
     whitePlayer: 'Blanc',
     komi: 6.5,
   });
+  const [importMessage, setImportMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
     loadGames();
@@ -71,6 +74,48 @@ const GameMenu: React.FC<GameMenuProps> = ({ onGameSelected }) => {
     }
   };
 
+  const handleImportSGF = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const content = await file.text();
+      const { game, warnings } = SGFService.parse(content);
+
+      // Sauvegarder et charger
+      await StorageService.saveGame(game);
+      dispatch(setCurrentGame(game));
+      dispatch(addGameToList(game));
+
+      if (warnings.length > 0) {
+        setImportMessage({
+          type: 'success',
+          text: `${t('game:importSuccess')} — ${t('game:movesImported', { count: game.rootMoves.length })} (${t('game:importWarnings', { count: warnings.length })})`,
+        });
+      } else {
+        setImportMessage({
+          type: 'success',
+          text: `${t('game:importSuccess')} — ${t('game:movesImported', { count: game.rootMoves.length })}`,
+        });
+      }
+
+      // Naviguer vers l'éditeur après un court délai
+      setTimeout(() => onGameSelected(), 500);
+    } catch (err) {
+      setImportMessage({
+        type: 'error',
+        text: `${t('game:importError')} : ${err instanceof Error ? err.message : String(err)}`,
+      });
+    }
+
+    // Reset le file input
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   return (
     <div className="game-menu">
       <div className="menu-content">
@@ -80,13 +125,38 @@ const GameMenu: React.FC<GameMenuProps> = ({ onGameSelected }) => {
 
         {!showNewGameForm ? (
           <>
-            <button
-              className="btn btn-primary"
-              onClick={() => setShowNewGameForm(true)}
-              aria-label={t('common:newGame')}
-            >
-              + {t('common:newGame')}
-            </button>
+            <div className="menu-actions">
+              <button
+                className="btn btn-primary"
+                onClick={() => setShowNewGameForm(true)}
+                aria-label={t('common:newGame')}
+              >
+                + {t('common:newGame')}
+              </button>
+
+              <button
+                className="btn btn-secondary"
+                onClick={handleImportSGF}
+                aria-label={t('common:importSGF')}
+              >
+                📥 {t('common:importSGF')}
+              </button>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".sgf"
+                onChange={handleFileSelected}
+                style={{ display: 'none' }}
+                aria-label={t('game:selectSGFFile')}
+              />
+            </div>
+
+            {importMessage && (
+              <div className={`import-message ${importMessage.type}`}>
+                {importMessage.text}
+              </div>
+            )}
 
             <div className="games-list">
               {gamesList.length === 0 ? (

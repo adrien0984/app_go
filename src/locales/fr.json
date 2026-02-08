@@ -43,7 +43,13 @@
     "addComment": "Ajouter Commentaire",
     "saveGame": "Enregistrer Partie",
     "myGames": "Mes Parties",
-    "noGamesFound": "Aucune partie trouvée"
+    "noGamesFound": "Aucune partie trouvée",
+    "importSuccess": "Partie importée avec succès",
+    "importError": "Erreur lors de l'import SGF",
+    "exportSuccess": "Partie exportée avec succès",
+    "importWarnings": "{{count}} avertissement(s) lors de l'import",
+    "selectSGFFile": "Sélectionner un fichier .sgf",
+    "movesImported": "{{count}} coup(s) importé(s)"
   },
   "analysis": {
     "title": "Analyse IA",

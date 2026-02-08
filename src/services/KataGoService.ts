@@ -259,6 +259,9 @@ export class KataGoService {
     // Générer policy (distribution de probabilité sur tout le plateau)
     const policy = this.generatePolicyDistribution(boardState, limitedMoveInfos);
 
+    // Générer ownership map (territoire estimé)
+    const ownership = this.generateOwnershipMap(boardState);
+
     return {
       id: uuidv4(),
       timestamp: new Date(),
@@ -271,6 +274,7 @@ export class KataGoService {
       },
       moveInfos: limitedMoveInfos,
       policy,
+      ownership,
       confidence: 0.7 + Math.random() * 0.2, // 70-90%
       analysisTime: 0, // Sera rempli par appelant
     };
@@ -393,6 +397,61 @@ export class KataGoService {
     }
 
     return policy;
+  }
+
+  /**
+   * Générer carte d'ownership simulée (territoire estimé)
+   * Valeurs: -1.0 (territoire Noir) à +1.0 (territoire Blanc), 0 = contesté
+   * 
+   * Algorithme : flood-fill basique depuis les pierres avec décroissance par distance
+   *
+   * @param boardState - État du plateau
+   * @returns Matrice 19×19 d'ownership (-1 à +1)
+   */
+  private generateOwnershipMap(boardState: BoardState): number[][] {
+    const size = boardState.size;
+    const ownership: number[][] = Array(size)
+      .fill(null)
+      .map(() => Array(size).fill(0));
+
+    // Pour chaque intersection, calculer l'influence des pierres proches
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        let influence = 0;
+
+        for (let sy = 0; sy < size; sy++) {
+          for (let sx = 0; sx < size; sx++) {
+            const stone = boardState.stones[sy][sx];
+            if (stone === null) continue;
+
+            const dist = Math.abs(x - sx) + Math.abs(y - sy); // Manhattan distance
+            if (dist === 0) {
+              // Sur la pierre même : ownership fort
+              influence += stone === 'B' ? -3 : 3;
+            } else if (dist <= 6) {
+              // Influence décroissante
+              const strength = 1.0 / (dist * dist);
+              influence += stone === 'B' ? -strength : strength;
+            }
+          }
+        }
+
+        // Clamp entre -1 et +1
+        ownership[y][x] = Math.max(-1, Math.min(1, influence));
+      }
+    }
+
+    // Ajouter un léger bruit pour réalisme
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        if (boardState.stones[y][x] === null) {
+          ownership[y][x] += (Math.random() - 0.5) * 0.1;
+          ownership[y][x] = Math.max(-1, Math.min(1, ownership[y][x]));
+        }
+      }
+    }
+
+    return ownership;
   }
 
   /**

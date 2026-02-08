@@ -437,6 +437,83 @@ const colorWithAlpha = (color: string, alpha: number): string => {
 };
 
 /**
+ * Convertit une valeur d'ownership (-1 à +1) en couleur territoire
+ * - Négatif (Noir) → Bleu (#2563eb)
+ * - Positif (Blanc) → Rouge (#dc2626)
+ * - Neutre (0) → Transparent
+ *
+ * @param value - Valeur d'ownership (-1.0 à +1.0)
+ * @returns Couleur CSS rgba avec alpha proportionnel à l'intensité
+ */
+export const ownershipValueToColor = (value: number): string => {
+  const absVal = Math.abs(value);
+  
+  if (absVal < 0.05) return 'rgba(0,0,0,0)'; // Neutre → transparent
+  
+  const alpha = Math.min(0.6, absVal * 0.7);
+  
+  if (value < 0) {
+    // Territoire Noir → Bleu
+    return `rgba(37, 99, 235, ${alpha})`;
+  } else {
+    // Territoire Blanc → Rouge
+    return `rgba(220, 38, 38, ${alpha})`;
+  }
+};
+
+/**
+ * Dessine la heatmap d'ownership (territoire estimé)
+ * Colore chaque intersection selon l'ownership (-1 noir/bleu, +1 blanc/rouge)
+ *
+ * @param ctx - Contexte Canvas 2D
+ * @param ownership - Matrice 19×19 d'ownership (-1.0 à +1.0)
+ * @param cellSize - Taille d'une cellule
+ * @param moves - Coups sur le plateau (pour éviter de dessiner sur les pierres)
+ */
+export const drawOwnershipMap = (
+  ctx: CanvasRenderingContext2D,
+  ownership: number[][],
+  cellSize: number,
+  moves: Move[]
+): void => {
+  if (!ownership || ownership.length === 0) return;
+
+  // Positions occupées par des pierres
+  const occupied = new Set<string>();
+  for (const move of moves) {
+    occupied.add(`${move.x},${move.y}`);
+  }
+
+  const margin = cellSize;
+  const radius = cellSize * 0.42;
+
+  for (let y = 0; y < ownership.length; y++) {
+    for (let x = 0; x < ownership[y].length; x++) {
+      // Ne pas dessiner sur les pierres
+      if (occupied.has(`${x},${y}`)) continue;
+
+      const value = ownership[y][x];
+      if (Math.abs(value) < 0.05) continue; // Ignorer neutre
+
+      const px = margin + x * cellSize;
+      const py = margin + y * cellSize;
+
+      const color = ownershipValueToColor(value);
+
+      ctx.beginPath();
+      ctx.arc(px, py, radius, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.fill();
+    }
+  }
+};
+
+/**
+ * Type de heatmap à afficher
+ */
+export type HeatmapMode = 'none' | 'policy' | 'ownership';
+
+/**
  * Fonction complète de rendu du plateau
  * Enchaîne tous les layers dans l'ordre correct
  *
@@ -447,6 +524,8 @@ const colorWithAlpha = (color: string, alpha: number): string => {
  * @param hoverPosition - Position du survol
  * @param nextColor - Couleur du prochain coup
  * @param policy - Distribution policy NN 19×19 (optionnel, pour heatmap)
+ * @param ownership - Carte d'ownership 19×19 (optionnel, pour heatmap territoire)
+ * @param heatmapMode - Mode de heatmap à utiliser ('none' | 'policy' | 'ownership')
  */
 export const renderBoard = (
   ctx: CanvasRenderingContext2D,
@@ -455,7 +534,9 @@ export const renderBoard = (
   lastMove: Move | null,
   hoverPosition: Position | null,
   nextColor: Color,
-  policy?: number[][] | null
+  policy?: number[][] | null,
+  ownership?: number[][] | null,
+  heatmapMode: HeatmapMode = 'none'
 ): void => {
   const cellSize = canvasSize / 19;
 
@@ -465,9 +546,11 @@ export const renderBoard = (
   drawHoshi(ctx, cellSize);
   drawCoordinates(ctx, cellSize);
 
-  // Layer 8 (optionnel) : Heatmap policy (entre grille et pierres)
-  if (policy) {
+  // Layer heatmap (entre grille et pierres)
+  if (heatmapMode === 'policy' && policy) {
     drawPolicyHeatmap(ctx, policy, cellSize, moves);
+  } else if (heatmapMode === 'ownership' && ownership) {
+    drawOwnershipMap(ctx, ownership, cellSize, moves);
   }
 
   drawStones(ctx, moves, cellSize);

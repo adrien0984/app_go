@@ -169,6 +169,13 @@ export interface KataGoAnalysisResult {
    */
   policy: number[][];
   
+  /**
+   * Carte d'ownership (propriété du territoire)
+   * Tableau 19×19 : valeurs de -1.0 (territoire Noir) à +1.0 (territoire Blanc)
+   * 0 = neutre/contesté. Utilisé pour la heatmap de territoire.
+   */
+  ownership: number[][] | null;
+  
   /** Niveau de confiance global (0.0-1.0) */
   confidence: number;
   

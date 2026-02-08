@@ -43,7 +43,13 @@
     "addComment": "Add Comment",
     "saveGame": "Save Game",
     "myGames": "My Games",
-    "noGamesFound": "No games found"
+    "noGamesFound": "No games found",
+    "importSuccess": "Game imported successfully",
+    "importError": "Error importing SGF",
+    "exportSuccess": "Game exported successfully",
+    "importWarnings": "{{count}} warning(s) during import",
+    "selectSGFFile": "Select a .sgf file",
+    "movesImported": "{{count}} move(s) imported"
   },
   "analysis": {
     "title": "AI Analysis",

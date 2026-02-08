@@ -19,7 +19,9 @@ import {
   drawHighlights,
   drawHover,
   drawPolicyHeatmap,
+  drawOwnershipMap,
 } from '@/utils/canvasUtils';
+import type { HeatmapMode } from '@/utils/canvasUtils';
 import { pixelToGoCoord, calculateCanvasSize } from '@/utils/boardUtils';
 import type { Position } from '@/types/game';
 import './Board.css';
@@ -28,8 +30,10 @@ export interface BoardProps {
   className?: string;
   /** Distribution policy NN 19×19 pour affichage heatmap */
   policy?: number[][] | null;
-  /** Activer/désactiver la heatmap policy */
-  showHeatmap?: boolean;
+  /** Carte d'ownership 19×19 pour heatmap territoire */
+  ownership?: number[][] | null;
+  /** Mode de heatmap à afficher */
+  heatmapMode?: HeatmapMode;
 }
 
 /**
@@ -48,7 +52,7 @@ export interface BoardProps {
  * @example
  * <Board className="my-board" />
  */
-export const Board: React.FC<BoardProps> = ({ className = '', policy = null, showHeatmap = false }) => {
+export const Board: React.FC<BoardProps> = ({ className = '', policy = null, ownership = null, heatmapMode = 'none' }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const rafIdRef = useRef<number | null>(null);
@@ -202,9 +206,11 @@ export const Board: React.FC<BoardProps> = ({ className = '', policy = null, sho
       drawHoshi(ctx, cellSize);
       drawCoordinates(ctx, cellSize);
 
-      // Layer 8 (optionnel) : Heatmap policy
-      if (showHeatmap && policy) {
+      // Layer heatmap (optionnel, entre grille et pierres)
+      if (heatmapMode === 'policy' && policy) {
         drawPolicyHeatmap(ctx, policy, cellSize, moves);
+      } else if (heatmapMode === 'ownership' && ownership) {
+        drawOwnershipMap(ctx, ownership, cellSize, moves);
       }
 
       drawStones(ctx, moves, cellSize);
@@ -225,7 +231,7 @@ export const Board: React.FC<BoardProps> = ({ className = '', policy = null, sho
         cancelAnimationFrame(rafIdRef.current);
       }
     };
-  }, [game, currentMoveIndex, hoverPosition, canvasSize, policy, showHeatmap]);
+  }, [game, currentMoveIndex, hoverPosition, canvasSize, policy, ownership, heatmapMode]);
 
   /**
    * Handler : Click sur intersection

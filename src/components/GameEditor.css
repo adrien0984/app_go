@@ -303,6 +303,92 @@
   justify-content: center;
 }
 
+/* Move navigation controls */
+.nav-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+  padding: 0.5rem;
+  background-color: #333;
+  border-radius: 6px;
+}
+
+.nav-btn {
+  background: none;
+  border: 1px solid #555;
+  color: #ddd;
+  font-size: 0.9rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 36px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-btn:hover:not(:disabled) {
+  background-color: #60a5fa;
+  border-color: #60a5fa;
+  color: #fff;
+}
+
+.nav-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.nav-info {
+  color: #aaa;
+  font-size: 0.85rem;
+  padding: 0 0.5rem;
+  min-width: 50px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Move items enhanced */
+.move-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.move-item.active {
+  background-color: #2563eb !important;
+  border-left-color: #93c5fd;
+  color: #fff;
+  font-weight: 600;
+}
+
+.move-item.future {
+  opacity: 0.45;
+}
+
+.move-color {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.move-color.black {
+  color: #333;
+  text-shadow: 0 0 2px #fff;
+}
+
+.move-color.white {
+  color: #f0f0f0;
+  text-shadow: 0 0 2px #000;
+}
+
+.move-comment-icon {
+  margin-left: auto;
+  font-size: 0.75rem;
+}
+
 .toggle-label {
   display: flex;
   align-items: center;
@@ -328,4 +414,36 @@
 
 .toggle-text {
   user-select: none;
+}
+
+/* Heatmap mode buttons */
+.heatmap-buttons {
+  display: flex;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.heatmap-btn {
+  background: transparent;
+  border: none;
+  color: #aaa;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.82em;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.heatmap-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ddd;
+}
+
+.heatmap-btn.active {
+  background: rgba(96, 165, 250, 0.25);
+  color: #93c5fd;
+  font-weight: 600;
 }
