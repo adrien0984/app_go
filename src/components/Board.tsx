@@ -13,6 +13,7 @@ import {
   drawBackground,
   drawGrid,
   drawHoshi,
+  drawCoordinates,
   drawStones,
   drawMoveNumbers,
   drawHighlights,
@@ -199,6 +200,7 @@ export const Board: React.FC<BoardProps> = ({ className = '', policy = null, sho
       drawBackground(ctx, canvasSize);
       drawGrid(ctx, canvasSize, cellSize);
       drawHoshi(ctx, cellSize);
+      drawCoordinates(ctx, cellSize);
 
       // Layer 8 (optionnel) : Heatmap policy
       if (showHeatmap && policy) {

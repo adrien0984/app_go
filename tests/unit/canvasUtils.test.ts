@@ -9,6 +9,7 @@ import {
   drawBackground,
   drawGrid,
   drawHoshi,
+  drawCoordinates,
   drawStones,
   drawMoveNumbers,
   drawHighlights,
@@ -16,6 +17,7 @@ import {
   drawPolicyHeatmap,
   policyValueToColor,
   renderBoard,
+  COLUMN_LABELS,
 } from '@/utils/canvasUtils';
 
 // Mock canvas context
@@ -514,6 +516,94 @@ describe('canvasUtils', () => {
       const colors = [c1, c2, c3, c4, c5];
       const unique = new Set(colors);
       expect(unique.size).toBe(5);
+    });
+  });
+
+  // =========================================================================
+  // Tests drawCoordinates
+  // =========================================================================
+  describe('COLUMN_LABELS', () => {
+    it('devrait contenir 19 lettres A-T sans I', () => {
+      expect(COLUMN_LABELS).toBe('ABCDEFGHJKLMNOPQRST');
+      expect(COLUMN_LABELS.length).toBe(19);
+    });
+
+    it('ne devrait pas contenir la lettre I', () => {
+      expect(COLUMN_LABELS.includes('I')).toBe(false);
+    });
+  });
+
+  describe('drawCoordinates', () => {
+    it('devrait dessiner des labels texte', () => {
+      drawCoordinates(ctx as unknown as CanvasRenderingContext2D, cellSize);
+
+      // 19 colonnes × 2 côtés + 19 lignes × 2 côtés = 76 appels fillText
+      expect(ctx.fillText).toHaveBeenCalledTimes(76);
+    });
+
+    it('devrait dessiner les labels de colonnes A-T sans I en haut et en bas', () => {
+      drawCoordinates(ctx as unknown as CanvasRenderingContext2D, cellSize);
+
+      const calls = ctx.fillText.mock.calls as [string, number, number][];
+      const topLabels = calls.slice(0, 38).filter((_c: [string, number, number], i: number) => i % 2 === 0);
+      const bottomLabels = calls.slice(0, 38).filter((_c: [string, number, number], i: number) => i % 2 === 1);
+
+      // Vérifie les 19 labels du haut
+      expect(topLabels.length).toBe(19);
+      topLabels.forEach((call: [string, number, number], i: number) => {
+        expect(call[0]).toBe(COLUMN_LABELS[i]);
+      });
+
+      // Les labels du bas ont les mêmes lettres
+      expect(bottomLabels.length).toBe(19);
+      bottomLabels.forEach((call: [string, number, number], i: number) => {
+        expect(call[0]).toBe(COLUMN_LABELS[i]);
+      });
+    });
+
+    it('devrait dessiner les numéros de lignes 1-19 à gauche et à droite', () => {
+      drawCoordinates(ctx as unknown as CanvasRenderingContext2D, cellSize);
+
+      const calls = ctx.fillText.mock.calls as [string, number, number][];
+      // Les 38 derniers appels = lignes (19 paires gauche/droite)
+      const rowCalls = calls.slice(38);
+
+      // Vérifie que les numéros vont de 19 (haut) à 1 (bas)
+      for (let i = 0; i < 19; i++) {
+        const expectedNum = String(19 - i);
+        expect(rowCalls[i * 2][0]).toBe(expectedNum); // Gauche
+        expect(rowCalls[i * 2 + 1][0]).toBe(expectedNum); // Droite
+      }
+    });
+
+    it('devrait positionner les labels dans les marges', () => {
+      drawCoordinates(ctx as unknown as CanvasRenderingContext2D, cellSize);
+
+      const calls = ctx.fillText.mock.calls as [string, number, number][];
+      const offset = cellSize;
+      const boardSize = cellSize * 18;
+
+      // Premier label colonne en haut : x = offset, y ≈ offset * 0.45
+      expect(calls[0][1]).toBeCloseTo(offset, 0);
+      expect(calls[0][2]).toBeCloseTo(offset * 0.45, 0);
+
+      // Premier label colonne en bas : x = offset, y ≈ offset + boardSize + offset * 0.55
+      expect(calls[1][1]).toBeCloseTo(offset, 0);
+      expect(calls[1][2]).toBeCloseTo(offset + boardSize + offset * 0.55, 0);
+    });
+
+    it('devrait utiliser textAlign center et textBaseline middle', () => {
+      drawCoordinates(ctx as unknown as CanvasRenderingContext2D, cellSize);
+
+      expect(ctx.textAlign).toBe('center');
+      expect(ctx.textBaseline).toBe('middle');
+    });
+
+    it('devrait adapter la taille de police au cellSize', () => {
+      drawCoordinates(ctx as unknown as CanvasRenderingContext2D, cellSize);
+
+      const expectedFontSize = Math.max(9, Math.round(cellSize * 0.4));
+      expect(ctx.font).toContain(`${expectedFontSize}px`);
     });
   });
 });

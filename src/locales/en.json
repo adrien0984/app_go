@@ -68,7 +68,20 @@
     "blackWinrate": "Black: {{percent}}%",
     "whiteWinrate": "White: {{percent}}%",
     "move": "Move",
-    "winprobability": "Win Probability"
+    "winprobability": "Win Probability",
+    "heatmap": "Policy Heatmap",
+    "profile": "Analysis Profile",
+    "profileFast": "Fast",
+    "profileFastDesc": "20 visits — Quick overview",
+    "profileStandard": "Standard",
+    "profileStandardDesc": "100 visits — Balanced analysis",
+    "profilePro": "Pro",
+    "profileProDesc": "400 visits — Deep analysis",
+    "territory": "Estimated Territory",
+    "territoryBlack": "Black Territory",
+    "territoryWhite": "White Territory",
+    "influence": "Influence",
+    "coordinates": "Coordinates"
   },
   "ocr": {
     "uploadPhoto": "Upload Photo",

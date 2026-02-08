@@ -8,6 +8,8 @@ import { KataGoService } from '@/services/KataGoService';
 import { GameService } from '@/services/GameService';
 import type { Game, Move } from '@/types/game';
 import type { KataGoMoveInfo } from '@/types/katago';
+import { ANALYSIS_PROFILES } from '@/types/katago';
+import type { AnalysisProfileId } from '@/types/katago';
 
 describe('KataGoService', () => {
   let service: KataGoService;
@@ -251,6 +253,63 @@ describe('KataGoService', () => {
       testGame.rootMoves.forEach((move: Move) => {
         expect(result.policy[move.y][move.x]).toBe(0);
       });
+    });
+  });
+
+  // =========================================================================
+  // Tests des profils d'analyse
+  // =========================================================================
+  describe('Profils d\'analyse (ANALYSIS_PROFILES)', () => {
+    it('devrait définir 3 profils : fast, standard, pro', () => {
+      expect(Object.keys(ANALYSIS_PROFILES)).toEqual(['fast', 'standard', 'pro']);
+    });
+
+    it('chaque profil devrait avoir toutes les propriétés requises', () => {
+      const profileIds: AnalysisProfileId[] = ['fast', 'standard', 'pro'];
+      profileIds.forEach((id: AnalysisProfileId) => {
+        const profile = ANALYSIS_PROFILES[id];
+        expect(profile.id).toBe(id);
+        expect(profile.labelKey).toBeDefined();
+        expect(profile.descriptionKey).toBeDefined();
+        expect(profile.icon).toBeDefined();
+        expect(profile.config).toBeDefined();
+        expect(profile.config.visits).toBeGreaterThan(0);
+      });
+    });
+
+    it('les visites devraient être croissantes : fast < standard < pro', () => {
+      const fastVisits = ANALYSIS_PROFILES.fast.config.visits!;
+      const stdVisits = ANALYSIS_PROFILES.standard.config.visits!;
+      const proVisits = ANALYSIS_PROFILES.pro.config.visits!;
+
+      expect(fastVisits).toBeLessThan(stdVisits);
+      expect(stdVisits).toBeLessThan(proVisits);
+    });
+
+    it('les valeurs fast devraient être 20 visites', () => {
+      expect(ANALYSIS_PROFILES.fast.config.visits).toBe(20);
+      expect(ANALYSIS_PROFILES.fast.config.topMoves).toBe(3);
+    });
+
+    it('les valeurs standard devraient être 100 visites', () => {
+      expect(ANALYSIS_PROFILES.standard.config.visits).toBe(100);
+      expect(ANALYSIS_PROFILES.standard.config.topMoves).toBe(5);
+    });
+
+    it('les valeurs pro devraient être 400 visites', () => {
+      expect(ANALYSIS_PROFILES.pro.config.visits).toBe(400);
+      expect(ANALYSIS_PROFILES.pro.config.topMoves).toBe(10);
+    });
+
+    it('devrait utiliser le profil sélectionné dans analyzePosition', async () => {
+      const profile = ANALYSIS_PROFILES.pro;
+      const result = await service.analyzePosition(testGame, undefined, {
+        config: profile.config,
+        forceRefresh: true,
+      });
+
+      // Avec profil pro, on devrait obtenir jusqu'à 10 top moves
+      expect(result.moveInfos.length).toBeLessThanOrEqual(profile.config.topMoves!);
     });
   });
 });

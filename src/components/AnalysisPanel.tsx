@@ -10,7 +10,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '@/store';
 import { setEvaluation } from '@/store/slices/evaluationsSlice';
 import KataGoService from '@/services/KataGoService';
-import type { KataGoAnalysisResult, AnalysisStatus } from '@/types/katago';
+import type { KataGoAnalysisResult, AnalysisStatus, AnalysisProfileId } from '@/types/katago';
+import { ANALYSIS_PROFILES } from '@/types/katago';
 import './AnalysisPanel.css';
 
 export interface AnalysisPanelProps {
@@ -45,6 +46,7 @@ export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ className = '', on
   const [status, setStatus] = useState<AnalysisStatus>('idle');
   const [result, setResult] = useState<KataGoAnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedProfile, setSelectedProfile] = useState<AnalysisProfileId>('standard');
 
   /**
    * Lancer l'analyse de la position courante
@@ -59,10 +61,11 @@ export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ className = '', on
     setError(null);
 
     try {
+      const profile = ANALYSIS_PROFILES[selectedProfile];
       const analysisResult = await KataGoService.analyzePosition(
         game,
         currentMoveIndex,
-        { useCache: true }
+        { useCache: true, config: profile.config }
       );
 
       setResult(analysisResult);
@@ -145,6 +148,28 @@ export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ className = '', on
         )}
       </div>
 
+      {/* Sélecteur de profil d'analyse */}
+      <div className="analysis-profile-selector">
+        <label className="profile-label">{t('analysis:profile')}</label>
+        <div className="profile-buttons">
+          {(Object.keys(ANALYSIS_PROFILES) as AnalysisProfileId[]).map((profileId) => {
+            const profile = ANALYSIS_PROFILES[profileId];
+            return (
+              <button
+                key={profileId}
+                className={`btn-profile ${selectedProfile === profileId ? 'active' : ''}`}
+                onClick={() => setSelectedProfile(profileId)}
+                title={t(profile.descriptionKey)}
+                aria-pressed={selectedProfile === profileId}
+              >
+                <span className="profile-icon">{profile.icon}</span>
+                <span className="profile-name">{t(profile.labelKey)}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Bouton Analyser */}
       {status === 'idle' || status === 'complete' ? (
         <button
@@ -220,6 +245,37 @@ export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ className = '', on
             </p>
           </div>
 
+          {/* Territoire estimé (dérivé du score et de la policy) */}
+          <div className="territory-section">
+            <h4>{t('analysis:territory')}</h4>
+            <div className="territory-bars">
+              <div className="territory-item">
+                <div className="territory-label">
+                  <span className="color-indicator black">⚫</span>
+                  <span>{t('analysis:territoryBlack')}</span>
+                </div>
+                <div className="territory-bar-container">
+                  <div
+                    className="territory-bar territory-bar-black"
+                    style={{ width: `${Math.max(5, Math.min(95, 50 + result.rootInfo.scoreLead * 1.5))}%` }}
+                  />
+                </div>
+              </div>
+              <div className="territory-item">
+                <div className="territory-label">
+                  <span className="color-indicator white">⚪</span>
+                  <span>{t('analysis:territoryWhite')}</span>
+                </div>
+                <div className="territory-bar-container">
+                  <div
+                    className="territory-bar territory-bar-white"
+                    style={{ width: `${Math.max(5, Math.min(95, 50 - result.rootInfo.scoreLead * 1.5))}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Top moves */}
           <div className="topmoves-section">
             <h4>{t('analysis:topMoves')}</h4>
@@ -246,6 +302,9 @@ export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ className = '', on
 
           {/* Métadonnées */}
           <div className="analysis-meta">
+            <span className="meta-item">
+              {ANALYSIS_PROFILES[selectedProfile].icon} {t(ANALYSIS_PROFILES[selectedProfile].labelKey)}
+            </span>
             <span className="meta-item">
               ⏱️ {result.analysisTime}ms
             </span>

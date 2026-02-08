@@ -20,7 +20,14 @@ const STYLE = {
   hoverColor: '#FFD700', // Or pour hover
   numberFont: '12px Arial',
   numberOffset: 0,
+  coordinateColor: '#4A3728', // Brun foncé pour les coordonnées
 };
+
+/**
+ * Labels de colonnes Go : A-T en excluant I (convention internationale)
+ * 19 lettres pour 19 colonnes
+ */
+export const COLUMN_LABELS = 'ABCDEFGHJKLMNOPQRST';
 
 // Positions des hoshi (points étoiles) sur grille 19×19
 const HOSHI_POSITIONS: Array<[number, number]> = [
@@ -108,8 +115,9 @@ export const drawHoshi = (
 };
 
 /**
- * Layer 4 (optionnel) : Dessine les coordonnées (A-S, 1-19)
- * Non implémenté pour MVP v1.0
+ * Layer 4 : Dessine les coordonnées (A-T sans I pour colonnes, 1-19 pour lignes)
+ * Convention Go : colonnes A-T (skip I), lignes 1 (bas) à 19 (haut)
+ * Labels affichés sur les 4 côtés du plateau dans les marges
  *
  * @param ctx - Contexte Canvas 2D
  * @param cellSize - Taille d'une cellule en pixels
@@ -118,8 +126,38 @@ export const drawCoordinates = (
   ctx: CanvasRenderingContext2D,
   cellSize: number
 ): void => {
-  // À implémenter en Phase 2B
-  // Affichage des labels A-S (colonnes) et 1-19 (lignes)
+  const offset = cellSize; // Marge identique à drawGrid
+  const boardSize = cellSize * 18;
+  const fontSize = Math.max(9, Math.round(cellSize * 0.4));
+
+  ctx.fillStyle = STYLE.coordinateColor;
+  ctx.font = `bold ${fontSize}px Arial`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  // Colonnes (A-T sans I) — en haut et en bas
+  for (let i = 0; i < 19; i++) {
+    const x = offset + i * cellSize;
+    const label = COLUMN_LABELS[i];
+
+    // En haut (milieu de la marge supérieure)
+    ctx.fillText(label, x, offset * 0.45);
+
+    // En bas (milieu de la marge inférieure)
+    ctx.fillText(label, x, offset + boardSize + offset * 0.55);
+  }
+
+  // Lignes (1-19, bas=1, haut=19) — à gauche et à droite
+  for (let i = 0; i < 19; i++) {
+    const y = offset + i * cellSize;
+    const label = String(19 - i); // y=0 → 19, y=18 → 1
+
+    // À gauche (milieu de la marge gauche)
+    ctx.fillText(label, offset * 0.45, y);
+
+    // À droite (milieu de la marge droite)
+    ctx.fillText(label, offset + boardSize + offset * 0.55, y);
+  }
 };
 
 /**
@@ -425,6 +463,7 @@ export const renderBoard = (
   drawBackground(ctx, canvasSize);
   drawGrid(ctx, canvasSize, cellSize);
   drawHoshi(ctx, cellSize);
+  drawCoordinates(ctx, cellSize);
 
   // Layer 8 (optionnel) : Heatmap policy (entre grille et pierres)
   if (policy) {

@@ -68,7 +68,20 @@
     "blackWinrate": "Noir : {{percent}}%",
     "whiteWinrate": "Blanc : {{percent}}%",
     "move": "Coup",
-    "winprobability": "Probabilité"
+    "winprobability": "Probabilité",
+    "heatmap": "Heatmap Policy",
+    "profile": "Profil d'analyse",
+    "profileFast": "Rapide",
+    "profileFastDesc": "20 visites — Aperçu rapide",
+    "profileStandard": "Standard",
+    "profileStandardDesc": "100 visites — Analyse équilibrée",
+    "profilePro": "Pro",
+    "profileProDesc": "400 visites — Analyse approfondie",
+    "territory": "Territoire Estimé",
+    "territoryBlack": "Territoire Noir",
+    "territoryWhite": "Territoire Blanc",
+    "influence": "Influence",
+    "coordinates": "Coordonnées"
   },
   "ocr": {
     "uploadPhoto": "Télécharger Photo",

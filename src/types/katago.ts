@@ -29,6 +29,68 @@ export interface KataGoConfig {
 }
 
 /**
+ * Profil d'analyse prédéfini
+ * Permet de choisir le niveau de profondeur de l'analyse
+ */
+export type AnalysisProfileId = 'fast' | 'standard' | 'pro';
+
+export interface AnalysisProfile {
+  /** Identifiant unique du profil */
+  id: AnalysisProfileId;
+  
+  /** Clé i18n pour le nom du profil */
+  labelKey: string;
+  
+  /** Clé i18n pour la description du profil */
+  descriptionKey: string;
+  
+  /** Icône emoji pour affichage rapide */
+  icon: string;
+  
+  /** Configuration KataGo associée */
+  config: Partial<KataGoConfig>;
+}
+
+/**
+ * Profils d'analyse prédéfinis
+ */
+export const ANALYSIS_PROFILES: Record<AnalysisProfileId, AnalysisProfile> = {
+  fast: {
+    id: 'fast',
+    labelKey: 'analysis:profileFast',
+    descriptionKey: 'analysis:profileFastDesc',
+    icon: '⚡',
+    config: {
+      visits: 20,
+      maxTime: 3,
+      topMoves: 3,
+    },
+  },
+  standard: {
+    id: 'standard',
+    labelKey: 'analysis:profileStandard',
+    descriptionKey: 'analysis:profileStandardDesc',
+    icon: '🔍',
+    config: {
+      visits: 100,
+      maxTime: 10,
+      topMoves: 5,
+    },
+  },
+  pro: {
+    id: 'pro',
+    labelKey: 'analysis:profilePro',
+    descriptionKey: 'analysis:profileProDesc',
+    icon: '🧠',
+    config: {
+      visits: 400,
+      maxTime: 30,
+      topMoves: 10,
+    },
+  },
+};
+
+/**
  * Configuration par défaut MVP
  */
 export const DEFAULT_KATAGO_CONFIG: KataGoConfig = {
