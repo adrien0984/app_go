@@ -273,6 +273,132 @@ export const drawHover = (
 };
 
 /**
+ * Layer 8 (optionnel) : Dessine la heatmap policy/ownership
+ * Affiche une couche semi-transparente colorée sur chaque intersection
+ * Couleurs : bleu (faible probabilité) → vert → jaune → rouge (haute probabilité)
+ *
+ * @param ctx - Contexte Canvas 2D
+ * @param policy - Matrice 19×19 de probabilités (0.0-1.0)
+ * @param cellSize - Taille d'une cellule en pixels
+ * @param moves - Coups joués (pour exclure intersections occupées)
+ * @param opacity - Opacité globale de la heatmap (0.0-1.0, défaut 0.45)
+ */
+export const drawPolicyHeatmap = (
+  ctx: CanvasRenderingContext2D,
+  policy: number[][],
+  cellSize: number,
+  moves: Move[],
+  opacity = 0.45
+): void => {
+  if (!policy || policy.length !== 19) return;
+
+  // Construire set des positions occupées pour lookup O(1)
+  const occupied = new Set<string>();
+  moves.forEach((m: Move) => occupied.add(`${m.x},${m.y}`));
+
+  // Trouver max pour normalisation visuelle
+  let maxProb = 0;
+  for (let y = 0; y < 19; y++) {
+    for (let x = 0; x < 19; x++) {
+      if (!occupied.has(`${x},${y}`) && policy[y][x] > maxProb) {
+        maxProb = policy[y][x];
+      }
+    }
+  }
+
+  if (maxProb === 0) return;
+
+  const stoneRadius = calculateStoneRadius(cellSize);
+
+  ctx.save();
+  ctx.globalAlpha = opacity;
+
+  for (let y = 0; y < 19; y++) {
+    for (let x = 0; x < 19; x++) {
+      // Ne pas dessiner sur pierres existantes
+      if (occupied.has(`${x},${y}`)) continue;
+
+      const prob = policy[y][x];
+      if (prob <= 0) continue;
+
+      // Normaliser par rapport au max pour un meilleur contraste
+      const normalized = prob / maxProb;
+
+      // Seuil minimum pour ne pas dessiner des valeurs insignifiantes
+      if (normalized < 0.02) continue;
+
+      const { px, py } = goCoordToPixel({ x, y }, cellSize);
+      const color = policyValueToColor(normalized);
+
+      // Dégradé radial pour un rendu plus naturel
+      const radius = stoneRadius * (0.4 + 0.6 * normalized);
+      const gradient = ctx.createRadialGradient(px, py, 0, px, py, radius);
+      gradient.addColorStop(0, color);
+      gradient.addColorStop(1, colorWithAlpha(color, 0));
+
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(px, py, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  ctx.restore();
+};
+
+/**
+ * Convertit une valeur normalisée (0-1) en couleur de heatmap
+ * Palette : bleu → cyan → vert → jaune → rouge
+ *
+ * @param value - Valeur normalisée entre 0.0 et 1.0
+ * @returns Couleur CSS rgba
+ */
+export const policyValueToColor = (value: number): string => {
+  const clamped = Math.max(0, Math.min(1, value));
+
+  let r: number, g: number, b: number;
+
+  if (clamped < 0.25) {
+    // Bleu → Cyan (0.0 - 0.25)
+    const t = clamped / 0.25;
+    r = 0;
+    g = Math.round(150 * t);
+    b = 200;
+  } else if (clamped < 0.5) {
+    // Cyan → Vert (0.25 - 0.5)
+    const t = (clamped - 0.25) / 0.25;
+    r = 0;
+    g = 150 + Math.round(105 * t);
+    b = Math.round(200 * (1 - t));
+  } else if (clamped < 0.75) {
+    // Vert → Jaune (0.5 - 0.75)
+    const t = (clamped - 0.5) / 0.25;
+    r = Math.round(255 * t);
+    g = 255;
+    b = 0;
+  } else {
+    // Jaune → Rouge (0.75 - 1.0)
+    const t = (clamped - 0.75) / 0.25;
+    r = 255;
+    g = Math.round(255 * (1 - t));
+    b = 0;
+  }
+
+  return `rgb(${r}, ${g}, ${b})`;
+};
+
+/**
+ * Ajoute un canal alpha à une couleur CSS rgb
+ *
+ * @param color - Couleur CSS au format rgb(r, g, b)
+ * @param alpha - Valeur alpha (0.0 - 1.0)
+ * @returns Couleur CSS rgba
+ */
+const colorWithAlpha = (color: string, alpha: number): string => {
+  return color.replace('rgb(', 'rgba(').replace(')', `, ${alpha})`);
+};
+
+/**
  * Fonction complète de rendu du plateau
  * Enchaîne tous les layers dans l'ordre correct
  *
@@ -282,6 +408,7 @@ export const drawHover = (
  * @param lastMove - Dernier coup (pour highlight)
  * @param hoverPosition - Position du survol
  * @param nextColor - Couleur du prochain coup
+ * @param policy - Distribution policy NN 19×19 (optionnel, pour heatmap)
  */
 export const renderBoard = (
   ctx: CanvasRenderingContext2D,
@@ -289,7 +416,8 @@ export const renderBoard = (
   moves: Move[],
   lastMove: Move | null,
   hoverPosition: Position | null,
-  nextColor: Color
+  nextColor: Color,
+  policy?: number[][] | null
 ): void => {
   const cellSize = canvasSize / 19;
 
@@ -297,6 +425,12 @@ export const renderBoard = (
   drawBackground(ctx, canvasSize);
   drawGrid(ctx, canvasSize, cellSize);
   drawHoshi(ctx, cellSize);
+
+  // Layer 8 (optionnel) : Heatmap policy (entre grille et pierres)
+  if (policy) {
+    drawPolicyHeatmap(ctx, policy, cellSize, moves);
+  }
+
   drawStones(ctx, moves, cellSize);
   drawMoveNumbers(ctx, moves, cellSize);
   drawHighlights(ctx, lastMove, cellSize);

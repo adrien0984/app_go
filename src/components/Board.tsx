@@ -17,6 +17,7 @@ import {
   drawMoveNumbers,
   drawHighlights,
   drawHover,
+  drawPolicyHeatmap,
 } from '@/utils/canvasUtils';
 import { pixelToGoCoord, calculateCanvasSize } from '@/utils/boardUtils';
 import type { Position } from '@/types/game';
@@ -24,6 +25,10 @@ import './Board.css';
 
 export interface BoardProps {
   className?: string;
+  /** Distribution policy NN 19×19 pour affichage heatmap */
+  policy?: number[][] | null;
+  /** Activer/désactiver la heatmap policy */
+  showHeatmap?: boolean;
 }
 
 /**
@@ -42,7 +47,7 @@ export interface BoardProps {
  * @example
  * <Board className="my-board" />
  */
-export const Board: React.FC<BoardProps> = ({ className = '' }) => {
+export const Board: React.FC<BoardProps> = ({ className = '', policy = null, showHeatmap = false }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const rafIdRef = useRef<number | null>(null);
@@ -194,6 +199,12 @@ export const Board: React.FC<BoardProps> = ({ className = '' }) => {
       drawBackground(ctx, canvasSize);
       drawGrid(ctx, canvasSize, cellSize);
       drawHoshi(ctx, cellSize);
+
+      // Layer 8 (optionnel) : Heatmap policy
+      if (showHeatmap && policy) {
+        drawPolicyHeatmap(ctx, policy, cellSize, moves);
+      }
+
       drawStones(ctx, moves, cellSize);
       drawMoveNumbers(ctx, moves, cellSize);
       drawHighlights(ctx, lastMove, cellSize);
@@ -212,7 +223,7 @@ export const Board: React.FC<BoardProps> = ({ className = '' }) => {
         cancelAnimationFrame(rafIdRef.current);
       }
     };
-  }, [game, currentMoveIndex, hoverPosition, canvasSize]);
+  }, [game, currentMoveIndex, hoverPosition, canvasSize, policy, showHeatmap]);
 
   /**
    * Handler : Click sur intersection

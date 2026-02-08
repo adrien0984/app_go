@@ -7,11 +7,24 @@
 
 ## [Unreleased]
 
-### Phase 2A - Board Interactif (En cours)
-- Board 19×19 Canvas rendering
+### Phase 3 - Intégration KataGo (En cours)
+
+#### Added
+- `KataGoAnalysisResult.policy: number[][]` — distribution de probabilité NN sur 19×19 intersections
+- `KataGoService.generatePolicyDistribution()` — génération avec influence gaussienne, normalisation
+- 5 nouveaux tests unitaires policy (normalisation, bornes, top moves, intersections occupées)
+- `AnalysisPanel` intégré dans `GameEditor` (sidebar) avec winrate, score, top moves
+- `GameEditor` affiche `Board` + `AnalysisPanel` avec liste de coups
+
+#### Changed
+- `tsconfig.json` : `tests/` ajouté à `include` (résolution alias `@/` dans tests)
+- Types explicites dans tous les callbacks de tests (conformité `noImplicitAny`)
+
+### Phase 2A/2B - Board Interactif (✅ Terminée)
+- Board 19×19 Canvas rendering (7 layers)
 - Click handlers placement coups
-- GameService logique métier
-- Tests unitaires + E2E
+- GameService logique métier (validation, alternance couleurs)
+- Tests unitaires (GameService, boardUtils, canvasUtils) + E2E (Board, Analysis)
 
 ---
 

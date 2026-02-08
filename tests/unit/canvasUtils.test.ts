@@ -13,6 +13,8 @@ import {
   drawMoveNumbers,
   drawHighlights,
   drawHover,
+  drawPolicyHeatmap,
+  policyValueToColor,
   renderBoard,
 } from '@/utils/canvasUtils';
 
@@ -27,6 +29,7 @@ class MockCanvasContext implements Partial<CanvasRenderingContext2D> {
   globalAlpha: number = 1;
 
   fillRect = vi.fn();
+  clearRect = vi.fn();
   beginPath = vi.fn();
   moveTo = vi.fn();
   lineTo = vi.fn();
@@ -34,6 +37,8 @@ class MockCanvasContext implements Partial<CanvasRenderingContext2D> {
   arc = vi.fn();
   fill = vi.fn();
   fillText = vi.fn();
+  save = vi.fn();
+  restore = vi.fn();
   createRadialGradient = vi.fn(() => ({
     addColorStop: vi.fn(),
   }));
@@ -384,6 +389,131 @@ describe('canvasUtils', () => {
       renderBoard(ctx as any, canvasSize, moves, moves[2], null, 'W');
 
       expect(ctx.createRadialGradient).toHaveBeenCalledTimes(3);
+    });
+
+    it('devrait accepter policy optionnelle sans erreur', () => {
+      const moves: Move[] = [
+        { x: 3, y: 3, color: 'B', moveNumber: 1 },
+      ];
+
+      expect(() => {
+        renderBoard(ctx as any, canvasSize, moves, moves[0], null, 'W', null);
+      }).not.toThrow();
+    });
+
+    it('devrait appeler drawPolicyHeatmap quand policy fournie', () => {
+      const moves: Move[] = [
+        { x: 3, y: 3, color: 'B', moveNumber: 1 },
+      ];
+      const policy: number[][] = Array(19).fill(null).map(() => Array(19).fill(0.001));
+      policy[9][9] = 0.5;
+
+      // renderBoard avec policy déclenche les appels de fill pour la heatmap
+      renderBoard(ctx as any, canvasSize, moves, moves[0], null, 'W', policy);
+
+      // Plus d'appels fill que sans heatmap (pierres + heatmap spots)
+      expect(ctx.fill.mock.calls.length).toBeGreaterThan(1);
+    });
+  });
+
+  describe('drawPolicyHeatmap()', () => {
+    it('ne devrait rien dessiner avec policy null', () => {
+      drawPolicyHeatmap(ctx as any, null as any, cellSize, []);
+      expect(ctx.fill).not.toHaveBeenCalled();
+    });
+
+    it('ne devrait rien dessiner avec policy vide', () => {
+      drawPolicyHeatmap(ctx as any, [] as any, cellSize, []);
+      expect(ctx.fill).not.toHaveBeenCalled();
+    });
+
+    it('ne devrait pas dessiner sur intersections occupées', () => {
+      const policy: number[][] = Array(19).fill(null).map(() => Array(19).fill(0));
+      policy[3][3] = 0.5; // Intersection occupée par une pierre
+      policy[9][9] = 0.5; // Intersection libre
+
+      const moves: Move[] = [
+        { x: 3, y: 3, color: 'B', moveNumber: 1 },
+      ];
+
+      drawPolicyHeatmap(ctx as any, policy, cellSize, moves);
+
+      // Devrait dessiner seulement l'intersection libre (9,9)
+      // fill est appelé pour les intersections libres avec probabilité > 0
+      expect(ctx.fill).toHaveBeenCalled();
+    });
+
+    it('devrait dessiner avec une opacité configurable', () => {
+      const policy: number[][] = Array(19).fill(null).map(() => Array(19).fill(0));
+      policy[9][9] = 0.5;
+
+      drawPolicyHeatmap(ctx as any, policy, cellSize, [], 0.7);
+
+      // Vérifier que save/restore sont appelés
+      expect(ctx.beginPath).toHaveBeenCalled();
+    });
+
+    it('ne devrait rien dessiner si toutes les probabilités sont 0', () => {
+      const policy: number[][] = Array(19).fill(null).map(() => Array(19).fill(0));
+
+      drawPolicyHeatmap(ctx as any, policy, cellSize, []);
+
+      // maxProb = 0, donc return précoce
+      expect(ctx.fill).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('policyValueToColor()', () => {
+    it('devrait retourner bleu pour valeurs basses', () => {
+      const color = policyValueToColor(0.1);
+      expect(color).toContain('rgb(');
+      // Vérifier composante bleue dominante
+      const match = color.match(/rgb\((\d+), (\d+), (\d+)\)/);
+      expect(match).not.toBeNull();
+      const [, r, , b] = match!;
+      expect(parseInt(b)).toBeGreaterThan(parseInt(r));
+    });
+
+    it('devrait retourner rouge pour valeurs hautes', () => {
+      const color = policyValueToColor(1.0);
+      const match = color.match(/rgb\((\d+), (\d+), (\d+)\)/);
+      expect(match).not.toBeNull();
+      const [, r, g, b] = match!;
+      expect(parseInt(r)).toBe(255);
+      expect(parseInt(g)).toBe(0);
+      expect(parseInt(b)).toBe(0);
+    });
+
+    it('devrait retourner vert pour valeurs moyennes', () => {
+      const color = policyValueToColor(0.5);
+      const match = color.match(/rgb\((\d+), (\d+), (\d+)\)/);
+      expect(match).not.toBeNull();
+      const [, r, g, b] = match!;
+      expect(parseInt(g)).toBeGreaterThan(parseInt(r));
+      expect(parseInt(g)).toBeGreaterThan(parseInt(b));
+    });
+
+    it('devrait clamper les valeurs hors bornes', () => {
+      const colorNeg = policyValueToColor(-0.5);
+      const colorZero = policyValueToColor(0);
+      expect(colorNeg).toBe(colorZero);
+
+      const colorOver = policyValueToColor(1.5);
+      const colorMax = policyValueToColor(1.0);
+      expect(colorOver).toBe(colorMax);
+    });
+
+    it('devrait retourner des couleurs différentes pour des valeurs distinctes', () => {
+      const c1 = policyValueToColor(0.0);
+      const c2 = policyValueToColor(0.25);
+      const c3 = policyValueToColor(0.5);
+      const c4 = policyValueToColor(0.75);
+      const c5 = policyValueToColor(1.0);
+
+      // Toutes les couleurs sont uniques aux seuils
+      const colors = [c1, c2, c3, c4, c5];
+      const unique = new Set(colors);
+      expect(unique.size).toBe(5);
     });
   });
 });

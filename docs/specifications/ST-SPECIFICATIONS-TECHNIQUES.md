@@ -148,46 +148,52 @@ interface KataGoConfig {
   topMoves: number;         // 5
 }
 
-// Output format
+// Output format (implémenté dans src/types/katago.ts)
 interface KataGoAnalysisResult {
   id: string;
+  timestamp: Date;
   rootInfo: {
     currentPlayer: 'B' | 'W';
     scoreLead: number;       // Points noir - blanc
     winrate: number;         // 0.0 - 1.0 pour noir
     visits: number;
+    utility: number;         // Utilité combinée
   };
-  policy: Array<{
-    move: string;            // SGF coords "D4", "Q16"
-    prior: number;           // Probabilité a priori NN
-  }>;
-  moveInfos: Array<{
-    move: string;            // SGF coords "D4", "Q16"
-    visits: number;
-    winrate: number;
-    scoreLead: number;
-    prior: number;           // Probabilité a priori NN
-    lcb: number;             // Lower confidence bound
-  }>;
+  moveInfos: KataGoMoveInfo[];  // Top N coups évalués
+  policy: number[][];        // Distribution NN 19×19 normalisée (somme = 1.0)
+  confidence: number;        // 0.0 - 1.0
+  analysisTime: number;      // Durée en ms
 }
 
-// Exemple de payload KataGo
+interface KataGoMoveInfo {
+  move: Position;            // {x, y} coordonnées Go
+  moveSGF: string;           // Notation "D4", "Q16"
+  visits: number;
+  winrate: number;
+  scoreLead: number;
+  prior: number;             // Probabilité a priori NN
+  lcb: number;               // Lower confidence bound
+  utility: number;
+}
+
+// Exemple de payload KataGo (avec policy matrice 19×19)
 const example: KataGoAnalysisResult = {
   id: 'eval-uuid-123',
+  timestamp: new Date(),
   rootInfo: {
     currentPlayer: 'B',
     scoreLead: 2.3,
     winrate: 0.58,
-    visits: 1200
+    visits: 1200,
+    utility: 0.58
   },
-  policy: [
-    { move: 'D4', prior: 0.08 },
-    { move: 'Q16', prior: 0.06 }
-  ],
   moveInfos: [
-    { move: 'D4', visits: 280, winrate: 0.61, scoreLead: 2.9, prior: 0.08, lcb: 0.55 },
-    { move: 'Q16', visits: 240, winrate: 0.59, scoreLead: 2.4, prior: 0.06, lcb: 0.52 }
-  ]
+    { move: {x:3,y:3}, moveSGF: 'D4', visits: 280, winrate: 0.61, scoreLead: 2.9, prior: 0.08, lcb: 0.55, utility: 0.62 },
+    { move: {x:15,y:3}, moveSGF: 'Q16', visits: 240, winrate: 0.59, scoreLead: 2.4, prior: 0.06, lcb: 0.52, utility: 0.59 }
+  ],
+  policy: [ /* matrice 19×19 float, somme = 1.0, 0 sur pierres existantes */ ],
+  confidence: 0.85,
+  analysisTime: 1200
 };
 ```
 
@@ -196,28 +202,28 @@ const example: KataGoAnalysisResult = {
 ```
 src/
   services/
-    KataGoService.ts        # 🆕 Wrapper KataGo.js
+    KataGoService.ts        # ✅ Wrapper KataGo (singleton, cache, simulation MVP)
   workers/
-    katagoWorker.ts         # 🆕 Web Worker WASM
+    katagoWorker.ts         # 🆕 Web Worker WASM (TODO: post-MVP)
   components/
-    AnalysisPanel.tsx       # 🆕 UI analyses
-    AnalysisPanel.css       # 🆕 Styles
+    AnalysisPanel.tsx       # ✅ UI analyses (winrate, score, top moves)
+    AnalysisPanel.css       # ✅ Styles
   store/slices/
-    evaluationsSlice.ts     # ✅ Déjà créé
+    evaluationsSlice.ts     # ✅ Slice Redux analyses
   hooks/
-    useAnalysis.ts          # 🆕 Hook analyses
+    useAnalysis.ts          # 🆕 Hook analyses (TODO)
   types/
-    katago.ts               # 🆕 Types KataGo
+    katago.ts               # ✅ Types complets (policy: number[][], 169 lignes)
 wasm/
   katagojs/
-    katago.wasm             # 🆕 Binaire WASM
+    katago.wasm             # 🆕 Binaire WASM (TODO: post-MVP)
     katago.js               # 🆕 Loader JS
     config.json             # 🆕 Config réseau neural
 tests/
   unit/
-    KataGoService.test.ts   # 🆕 Tests unitaires
+    KataGoService.test.ts   # ✅ 21 tests (policy, cache, singleton, validation)
   e2e/
-    analysis.spec.ts        # 🆕 Tests E2E analyse
+    analysis.spec.ts        # ✅ Tests E2E analyse workflow
 ```
 
 ## 1.3 ARCHITECTURE CIBLE (v1.1–v2.0)

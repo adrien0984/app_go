@@ -16,6 +16,8 @@ import './AnalysisPanel.css';
 export interface AnalysisPanelProps {
   /** Classe CSS supplémentaire */
   className?: string;
+  /** Callback quand une analyse est terminée */
+  onAnalysisComplete?: (result: KataGoAnalysisResult) => void;
 }
 
 /**
@@ -33,7 +35,7 @@ export interface AnalysisPanelProps {
  * @example
  * <AnalysisPanel />
  */
-export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ className = '' }) => {
+export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ className = '', onAnalysisComplete }) => {
   const { t } = useTranslation(['common', 'analysis']);
   const dispatch = useDispatch();
 
@@ -65,6 +67,9 @@ export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ className = '' }) 
 
       setResult(analysisResult);
       setStatus('complete');
+
+      // Notifier le parent (pour heatmap, etc.)
+      onAnalysisComplete?.(analysisResult);
 
       // Sauvegarder dans Redux store
       dispatch(setEvaluation({

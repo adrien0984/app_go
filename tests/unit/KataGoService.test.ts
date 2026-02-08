@@ -6,7 +6,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { KataGoService } from '@/services/KataGoService';
 import { GameService } from '@/services/GameService';
-import type { Game } from '@/types/game';
+import type { Game, Move } from '@/types/game';
+import type { KataGoMoveInfo } from '@/types/katago';
 
 describe('KataGoService', () => {
   let service: KataGoService;
@@ -107,7 +108,7 @@ describe('KataGoService', () => {
 
       expect(topMoves).toBeInstanceOf(Array);
       expect(topMoves.length).toBeLessThanOrEqual(3);
-      topMoves.forEach((move) => {
+      topMoves.forEach((move: KataGoMoveInfo) => {
         expect(move.move).toBeDefined();
         expect(move.moveSGF).toBeDefined();
         expect(move.winrate).toBeGreaterThanOrEqual(0);
@@ -151,7 +152,7 @@ describe('KataGoService', () => {
     it('devrait générer des moveInfos avec coordonnées valides', async () => {
       const result = await service.analyzePosition(testGame);
 
-      result.moveInfos.forEach((move) => {
+      result.moveInfos.forEach((move: KataGoMoveInfo) => {
         expect(move.move.x).toBeGreaterThanOrEqual(0);
         expect(move.move.x).toBeLessThan(19);
         expect(move.move.y).toBeGreaterThanOrEqual(0);
@@ -162,7 +163,7 @@ describe('KataGoService', () => {
     it('devrait générer notation SGF correcte', async () => {
       const result = await service.analyzePosition(testGame);
 
-      result.moveInfos.forEach((move) => {
+      result.moveInfos.forEach((move: KataGoMoveInfo) => {
         expect(move.moveSGF).toMatch(/^[A-S]\d{1,2}$/);
       });
     });
@@ -186,7 +187,7 @@ describe('KataGoService', () => {
       expect(result.policy).toBeDefined();
       expect(result.policy).toBeInstanceOf(Array);
       expect(result.policy.length).toBe(19);
-      result.policy.forEach((row) => {
+      result.policy.forEach((row: number[]) => {
         expect(row.length).toBe(19);
       });
     });
@@ -209,8 +210,8 @@ describe('KataGoService', () => {
     it('devrait avoir probabilités policy entre 0 et 1', async () => {
       const result = await service.analyzePosition(testGame);
 
-      result.policy.forEach((row) => {
-        row.forEach((prob) => {
+      result.policy.forEach((row: number[]) => {
+        row.forEach((prob: number) => {
           expect(prob).toBeGreaterThanOrEqual(0);
           expect(prob).toBeLessThanOrEqual(1);
         });
@@ -230,7 +231,7 @@ describe('KataGoService', () => {
       for (let y = 0; y < 19; y++) {
         for (let x = 0; x < 19; x++) {
           const isTopMove = result.moveInfos.some(
-            (m) => m.move.x === x && m.move.y === y
+            (m: KataGoMoveInfo) => m.move.x === x && m.move.y === y
           );
           if (!isTopMove) {
             avgOtherProb += result.policy[y][x];
@@ -247,7 +248,7 @@ describe('KataGoService', () => {
       const result = await service.analyzePosition(testGame);
 
       // Vérifier coups joués ont policy = 0
-      testGame.rootMoves.forEach((move) => {
+      testGame.rootMoves.forEach((move: Move) => {
         expect(result.policy[move.y][move.x]).toBe(0);
       });
     });

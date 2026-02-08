@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { RootState } from '@store/index';
 import type { Game } from '@/types/game';
 import Board from './Board';
 import AnalysisPanel from './AnalysisPanel';
+import type { KataGoAnalysisResult } from '@/types/katago';
 import './GameEditor.css';
 
 interface GameEditorProps {
@@ -14,6 +15,10 @@ interface GameEditorProps {
 const GameEditor: React.FC<GameEditorProps> = ({ onBack }) => {
   const { t } = useTranslation(['common', 'game']);
   const currentGame = useSelector((state: RootState) => state.game.current);
+
+  // État heatmap policy
+  const [showHeatmap, setShowHeatmap] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<KataGoAnalysisResult | null>(null);
 
   if (!currentGame) {
     return <div>{t('common:loading')}</div>;
@@ -33,7 +38,25 @@ const GameEditor: React.FC<GameEditorProps> = ({ onBack }) => {
 
       <div className="editor-main">
         <div className="board-section">
-          <Board />
+          <Board
+            policy={analysisResult?.policy ?? null}
+            showHeatmap={showHeatmap}
+          />
+
+          {/* Toggle heatmap */}
+          {analysisResult && (
+            <div className="heatmap-toggle">
+              <label className="toggle-label">
+                <input
+                  type="checkbox"
+                  checked={showHeatmap}
+                  onChange={(e) => setShowHeatmap(e.target.checked)}
+                  aria-label={t('analysis:heatmap')}
+                />
+                <span className="toggle-text">🔥 {t('analysis:heatmap', 'Heatmap Policy')}</span>
+              </label>
+            </div>
+          )}
         </div>
 
         <div className="sidebar">
@@ -52,7 +75,7 @@ const GameEditor: React.FC<GameEditorProps> = ({ onBack }) => {
             </div>
           </div>
 
-          <AnalysisPanel />
+          <AnalysisPanel onAnalysisComplete={setAnalysisResult} />
         </div>
       </div>
     </div>

@@ -12,6 +12,9 @@
   - Pixel↔coord Go + sizing responsive via `boardUtils` [src/utils/boardUtils.ts](src/utils/boardUtils.ts).
   - Validation/alternance des coups via `GameService` [src/services/GameService.ts](src/services/GameService.ts).
 - Persistance locale via `StorageService` [src/services/StorageService.ts](src/services/StorageService.ts) (IndexedDB, `ensureDB()` appelle `initDB()` si nécessaire).
+- Analyse KataGo via `KataGoService` [src/services/KataGoService.ts](src/services/KataGoService.ts) (singleton, cache Map, simulation MVP).
+  - Types complets dans [src/types/katago.ts](src/types/katago.ts) : `KataGoAnalysisResult` avec `policy: number[][]` (distribution NN 19×19).
+  - UI dans `AnalysisPanel` [src/components/AnalysisPanel.tsx](src/components/AnalysisPanel.tsx) : winrate, score, top moves, loading, erreurs.
 
 ## Conventions spécifiques
 - Aliases d’import : `@`, `@components`, `@services`, `@types`, `@utils`, `@store` (voir [tsconfig.json](tsconfig.json) et [vite.config.ts](vite.config.ts)).
