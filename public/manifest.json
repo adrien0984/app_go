@@ -1,0 +1,70 @@
+{
+  "name": "GoAI Editor",
+  "short_name": "GoAI",
+  "description": "Interactive Go game editor with AI analysis (KataGo) and OCR recognition",
+  "scope": "/",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#1e293b",
+  "background_color": "#ffffff",
+  "categories": ["games", "education"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/desktop.png",
+      "sizes": "1280x720",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/screenshots/mobile.png",
+      "sizes": "540x720",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Créer une partie",
+      "short_name": "Nouvelle",
+      "description": "Créer une nouvelle partie de Go",
+      "url": "/?action=new",
+      "icons": [
+        {
+          "src": "/icons/new-game.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Importer SGF",
+      "short_name": "Importer",
+      "description": "Importer un fichier SGF",
+      "url": "/?action=import",
+      "icons": [
+        {
+          "src": "/icons/import.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
