@@ -1,0 +1,343 @@
+{
+  "agents": {
+    "orchestrator": {
+      "name": "Agent Orchestrateur",
+      "role": "Chef de Projet & Coordinateur",
+      "description": "Pilote l'ensemble du projet, priorise les tâches, gère les phases et coordonne les autres agents",
+      "capabilities": [
+        "Planification stratégique",
+        "Priorisation des tâches",
+        "Gestion des risques",
+        "Coordination inter-agents",
+        "Décisions d'architecture",
+        "Validation des livrables"
+      ],
+      "permissions": {
+        "read": ["**/*"],
+        "write": [
+          ".agents/**",
+          "ROADMAP.md",
+          "DECISIONS.md",
+          "PHASES.md"
+        ],
+        "invoke_agents": ["specs", "dev", "qa"],
+        "git_operations": ["tag", "branch", "status"]
+      },
+      "tools": [
+        "manage_todo_list",
+        "semantic_search",
+        "grep_search",
+        "read_file",
+        "create_file",
+        "get_changed_files"
+      ]
+    },
+    "specs": {
+      "name": "Agent Spécifications",
+      "role": "Product & Tech Writer",
+      "description": "Rédige et maintient les spécifications (SF/ST), architecture, documentation technique",
+      "capabilities": [
+        "Rédaction SF/ST",
+        "Mise à jour specs après changements",
+        "Documentation API",
+        "Architecture diagrams",
+        "User stories",
+        "Technical writing"
+      ],
+      "permissions": {
+        "read": ["**/*"],
+        "write": [
+          "SF-*.md",
+          "ST-*.md",
+          "ARCHITECTURE.md",
+          "docs/**",
+          "*.md"
+        ],
+        "invoke_agents": ["orchestrator"],
+        "git_operations": ["commit", "diff"]
+      },
+      "tools": [
+        "read_file",
+        "create_file",
+        "replace_string_in_file",
+        "multi_replace_string_in_file",
+        "semantic_search",
+        "grep_search",
+        "get_changed_files"
+      ],
+      "context_sources": [
+        "MCP Context7 (normes actuelles)",
+        "Spécifications existantes",
+        "Feedback utilisateur"
+      ]
+    },
+    "dev": {
+      "name": "Agent Développement",
+      "role": "Code Generator & Implementer",
+      "description": "Implémente les features, scaffold code, intégrations (KataGo, OCR, SGF), tests unitaires",
+      "capabilities": [
+        "Scaffold composants React",
+        "Implémentation services",
+        "Intégration WASM (KataGo)",
+        "Intégration ML (TensorFlow OCR)",
+        "Tests unitaires (Vitest)",
+        "Refactoring code",
+        "Performance optimization"
+      ],
+      "permissions": {
+        "read": ["**/*"],
+        "write": [
+          "src/**",
+          "tests/unit/**",
+          "vite.config.ts",
+          "tsconfig.json",
+          "package.json"
+        ],
+        "invoke_agents": ["orchestrator", "qa"],
+        "git_operations": ["commit", "diff", "status"]
+      },
+      "tools": [
+        "create_file",
+        "replace_string_in_file",
+        "multi_replace_string_in_file",
+        "read_file",
+        "semantic_search",
+        "grep_search",
+        "list_code_usages",
+        "get_errors",
+        "run_in_terminal"
+      ],
+      "context_sources": [
+        "MCP Context7 (TypeScript, React patterns)",
+        "ST-SPECIFICATIONS-TECHNIQUES.md",
+        "ARCHITECTURE.md",
+        "Code existant (src/)"
+      ],
+      "linting": {
+        "enabled": true,
+        "auto_fix": true,
+        "pre_commit": true
+      }
+    },
+    "qa": {
+      "name": "Agent Tests Utilisateur",
+      "role": "QA & UX Validator",
+      "description": "Valide features, tests e2e, offline mode, mobile responsive, rapports bugs",
+      "capabilities": [
+        "Tests E2E (Playwright)",
+        "Tests offline mode",
+        "Tests responsive mobile",
+        "Validation UX flows",
+        "Détection anomalies",
+        "Rapports QA",
+        "Priorisation bugs"
+      ],
+      "permissions": {
+        "read": ["**/*"],
+        "write": [
+          "tests/e2e/**",
+          "tests/reports/**",
+          "QA-REPORTS.md",
+          "BUGS.md"
+        ],
+        "invoke_agents": ["orchestrator", "dev"],
+        "git_operations": ["status", "diff"]
+      },
+      "tools": [
+        "create_file",
+        "replace_string_in_file",
+        "read_file",
+        "run_in_terminal",
+        "get_errors",
+        "semantic_search",
+        "open_simple_browser"
+      ],
+      "test_environments": [
+        "Chrome Desktop",
+        "Firefox Desktop",
+        "Chrome Mobile (emulated)",
+        "Safari iOS (emulated)",
+        "Offline mode"
+      ],
+      "validation_criteria": {
+        "functional": "SF user stories",
+        "performance": "ST targets",
+        "accessibility": "WCAG 2.1 AA",
+        "offline": "100% functionality",
+        "responsive": "xs, sm, md, lg, xl breakpoints"
+      }
+    }
+  },
+  "workflows": {
+    "phase_start": {
+      "description": "Démarrage d'une nouvelle phase de développement",
+      "steps": [
+        {
+          "agent": "orchestrator",
+          "action": "Créer plan de phase (tâches, priorités, risques)"
+        },
+        {
+          "agent": "specs",
+          "action": "Mettre à jour SF/ST avec nouvelles features"
+        },
+        {
+          "agent": "orchestrator",
+          "action": "Valider specs, assigner tâches à dev"
+        }
+      ]
+    },
+    "feature_implementation": {
+      "description": "Implémentation d'une nouvelle feature",
+      "steps": [
+        {
+          "agent": "specs",
+          "action": "Détailler user story + critères acceptation"
+        },
+        {
+          "agent": "dev",
+          "action": "Implémenter code + tests unitaires"
+        },
+        {
+          "agent": "dev",
+          "action": "Auto-validation (linting, type-check, unit tests)"
+        },
+        {
+          "agent": "qa",
+          "action": "Tests E2E + validation UX"
+        },
+        {
+          "agent": "qa",
+          "action": "Rapport QA → orchestrator"
+        },
+        {
+          "agent": "orchestrator",
+          "action": "Décision: merge ou iterate"
+        }
+      ]
+    },
+    "bug_fix": {
+      "description": "Correction de bug",
+      "steps": [
+        {
+          "agent": "qa",
+          "action": "Reporter bug (repro steps, severity)"
+        },
+        {
+          "agent": "orchestrator",
+          "action": "Prioriser bug (critical/major/minor)"
+        },
+        {
+          "agent": "dev",
+          "action": "Investiguer + fix + test unitaire"
+        },
+        {
+          "agent": "qa",
+          "action": "Valider fix + regression tests"
+        },
+        {
+          "agent": "orchestrator",
+          "action": "Close bug si validé"
+        }
+      ]
+    },
+    "specs_update": {
+      "description": "Mise à jour spécifications après changement",
+      "steps": [
+        {
+          "agent": "orchestrator",
+          "action": "Identifier changements (code, features)"
+        },
+        {
+          "agent": "specs",
+          "action": "Mettre à jour SF/ST/ARCHITECTURE"
+        },
+        {
+          "agent": "specs",
+          "action": "Documenter dans CHANGELOG"
+        },
+        {
+          "agent": "orchestrator",
+          "action": "Valider cohérence SF ↔ ST ↔ Code"
+        }
+      ]
+    },
+    "phase_completion": {
+      "description": "Finalisation d'une phase",
+      "steps": [
+        {
+          "agent": "qa",
+          "action": "Tests complets (E2E, offline, responsive)"
+        },
+        {
+          "agent": "qa",
+          "action": "Rapport QA final"
+        },
+        {
+          "agent": "specs",
+          "action": "Mettre à jour docs (README, ARCHITECTURE)"
+        },
+        {
+          "agent": "orchestrator",
+          "action": "Validation phase complète"
+        },
+        {
+          "agent": "orchestrator",
+          "action": "Git tag version (ex: v1.0-phase2a)"
+        },
+        {
+          "agent": "orchestrator",
+          "action": "Planifier prochaine phase"
+        }
+      ]
+    }
+  },
+  "communication": {
+    "channels": {
+      "orchestrator_to_all": "Directives, priorités, décisions",
+      "specs_to_dev": "User stories, critères acceptation",
+      "dev_to_qa": "Features ready for testing",
+      "qa_to_orchestrator": "Bug reports, QA status",
+      "all_to_orchestrator": "Questions, blockers, escalations"
+    },
+    "artifacts": {
+      "orchestrator": [
+        ".agents/PHASES.md",
+        ".agents/DECISIONS.md",
+        ".agents/ROADMAP.md"
+      ],
+      "specs": [
+        "SF-SPECIFICATIONS-FONCTIONNELLES.md",
+        "ST-SPECIFICATIONS-TECHNIQUES.md",
+        "ARCHITECTURE.md",
+        "CHANGELOG.md"
+      ],
+      "dev": [
+        "src/**/*.{ts,tsx}",
+        "tests/unit/**",
+        "TECHNICAL-NOTES.md"
+      ],
+      "qa": [
+        "tests/e2e/**",
+        "QA-REPORTS.md",
+        "BUGS.md"
+      ]
+    }
+  },
+  "coordination": {
+    "daily_sync": {
+      "frequency": "Début de chaque session de dev",
+      "participants": ["orchestrator", "dev", "qa"],
+      "agenda": [
+        "Orchestrator: Status phase actuelle",
+        "Dev: Progrès features, blockers",
+        "QA: Tests status, nouveaux bugs",
+        "Orchestrator: Ajustements priorités"
+      ]
+    },
+    "escalation": {
+      "level_1": "Agent résout seul",
+      "level_2": "Agent consulte orchestrator",
+      "level_3": "Orchestrator décide avec input utilisateur"
+    }
+  }
+}
