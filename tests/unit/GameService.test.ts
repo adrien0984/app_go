@@ -100,7 +100,10 @@ describe('GameService', () => {
       expect(state.lastMove).not.toBeNull();
       expect(state.lastMove?.x).toBe(7);
       expect(state.lastMove?.y).toBe(7);
-      expect(state.lastMove?.color).toBe('W');
+
+      // Vérifier la couleur du dernier coup via rootMoves
+      const lastRootMove = game.rootMoves[game.rootMoves.length - 1];
+      expect(lastRootMove.color).toBe('W');
     });
   });
 

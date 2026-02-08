@@ -524,10 +524,12 @@ test.describe('Board.tsx E2E Tests - US-2 Board Interactif', () => {
       const touchX = boundingBox.x + boundingBox.width / 3;
       const touchY = boundingBox.y + boundingBox.height / 3;
       
-      await page.touch({
-        x: touchX,
-        y: touchY
-      } as any);
+      await page.click('canvas.board-canvas', {
+        position: {
+          x: touchX - boundingBox.x,
+          y: touchY - boundingBox.y
+        }
+      });
       await page.waitForTimeout(300);
       
       // Vérifier coup a été placé

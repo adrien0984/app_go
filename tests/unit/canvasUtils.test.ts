@@ -20,6 +20,23 @@ import {
   COLUMN_LABELS,
 } from '@/utils/canvasUtils';
 
+/**
+ * Helper pour créer un Move partiel pour les tests
+ * Les champs obligatoires manquants (id, comment, symbols, etc.) sont acceptés
+ * dans ce contexte de test contrôlé
+ */
+function createTestMove(partial: Partial<Move> & { x: number; y: number; color: Color; moveNumber: number }): Move {
+  return {
+    id: 'test-move',
+    comment: null,
+    symbols: null,
+    variants: [],
+    parentMoveId: null,
+    createdAt: new Date(),
+    ...partial,
+  } as Move;
+}
+
 // Mock canvas context
 class MockCanvasContext implements Partial<CanvasRenderingContext2D> {
   fillStyle: string | CanvasGradient | CanvasPattern = '#000000';
@@ -146,8 +163,8 @@ describe('canvasUtils', () => {
   describe('drawStones', () => {
     it('devrait dessiner les pierres noires et blanches', () => {
       const moves: Move[] = [
-        { x: 3, y: 3, color: 'B', moveNumber: 1 },
-        { x: 3, y: 4, color: 'W', moveNumber: 2 },
+        createTestMove({ x: 3, y: 3, color: 'B', moveNumber: 1 }),
+        createTestMove({ x: 3, y: 4, color: 'W', moveNumber: 2 }),
       ];
 
       drawStones(ctx as any, moves, cellSize);
@@ -161,7 +178,7 @@ describe('canvasUtils', () => {
 
     it('devrait utiliser des gradients différents pour noir et blanc', () => {
       const moves: Move[] = [
-        { x: 3, y: 3, color: 'B', moveNumber: 1 },
+        createTestMove({ x: 3, y: 3, color: 'B', moveNumber: 1 }),
       ];
 
       drawStones(ctx as any, moves, cellSize);
@@ -171,7 +188,7 @@ describe('canvasUtils', () => {
 
     it('devrait ajouter une bordure pour les pierres blanches', () => {
       const moves: Move[] = [
-        { x: 3, y: 3, color: 'W', moveNumber: 1 },
+        createTestMove({ x: 3, y: 3, color: 'W', moveNumber: 1 }),
       ];
 
       drawStones(ctx as any, moves, cellSize);
@@ -195,8 +212,8 @@ describe('canvasUtils', () => {
   describe('drawMoveNumbers', () => {
     it('devrait afficher les numéros des coups', () => {
       const moves: Move[] = [
-        { x: 3, y: 3, color: 'B', moveNumber: 1 },
-        { x: 3, y: 4, color: 'W', moveNumber: 2 },
+        createTestMove({ x: 3, y: 3, color: 'B', moveNumber: 1 }),
+        createTestMove({ x: 3, y: 4, color: 'W', moveNumber: 2 }),
       ];
 
       drawMoveNumbers(ctx as any, moves, cellSize);
@@ -208,7 +225,7 @@ describe('canvasUtils', () => {
 
     it('devrait utiliser du texte blanc sur pierre noire', () => {
       const moves: Move[] = [
-        { x: 3, y: 3, color: 'B', moveNumber: 1 },
+        createTestMove({ x: 3, y: 3, color: 'B', moveNumber: 1 }),
       ];
 
       drawMoveNumbers(ctx as any, moves, cellSize);
@@ -219,7 +236,7 @@ describe('canvasUtils', () => {
 
     it('devrait utiliser du texte noir sur pierre blanche', () => {
       const moves: Move[] = [
-        { x: 3, y: 3, color: 'W', moveNumber: 1 },
+        createTestMove({ x: 3, y: 3, color: 'W', moveNumber: 1 }),
       ];
 
       drawMoveNumbers(ctx as any, moves, cellSize);
@@ -230,7 +247,7 @@ describe('canvasUtils', () => {
 
     it('devrait positionner le texte au centre', () => {
       const moves: Move[] = [
-        { x: 3, y: 3, color: 'B', moveNumber: 1 },
+        createTestMove({ x: 3, y: 3, color: 'B', moveNumber: 1 }),
       ];
 
       drawMoveNumbers(ctx as any, moves, cellSize);
@@ -246,7 +263,7 @@ describe('canvasUtils', () => {
 
   describe('drawHighlights', () => {
     it('devrait dessiner un cercle rouge autour du dernier coup', () => {
-      const lastMove: Move = { x: 3, y: 3, color: 'B', moveNumber: 1 };
+      const lastMove: Move = createTestMove({ x: 3, y: 3, color: 'B', moveNumber: 1 });
 
       drawHighlights(ctx as any, lastMove, cellSize);
 
@@ -311,7 +328,7 @@ describe('canvasUtils', () => {
   describe('renderBoard', () => {
     it('devrait appeler tous les layers dans l\'ordre correct', () => {
       const moves: Move[] = [
-        { x: 3, y: 3, color: 'B', moveNumber: 1 },
+        createTestMove({ x: 3, y: 3, color: 'B', moveNumber: 1 }),
       ];
       const lastMove: Move = moves[0];
       const hoverPosition: Position = { x: 4, y: 4 };
@@ -342,9 +359,9 @@ describe('canvasUtils', () => {
 
     it('devrait gérer plusieurs coups', () => {
       const moves: Move[] = [
-        { x: 3, y: 3, color: 'B', moveNumber: 1 },
-        { x: 4, y: 4, color: 'W', moveNumber: 2 },
-        { x: 5, y: 5, color: 'B', moveNumber: 3 },
+        createTestMove({ x: 3, y: 3, color: 'B', moveNumber: 1 }),
+        createTestMove({ x: 4, y: 4, color: 'W', moveNumber: 2 }),
+        createTestMove({ x: 5, y: 5, color: 'B', moveNumber: 3 }),
       ];
 
       renderBoard(ctx as any, canvasSize, moves, moves[2], null, 'W');
@@ -361,8 +378,8 @@ describe('canvasUtils', () => {
   describe('Integration - Pipeline Complet', () => {
     it('devrait exécuter le pipeline complet sans erreur', () => {
       const moves: Move[] = [
-        { x: 9, y: 9, color: 'B', moveNumber: 1 },
-        { x: 9, y: 10, color: 'W', moveNumber: 2 },
+        createTestMove({ x: 9, y: 9, color: 'B', moveNumber: 1 }),
+        createTestMove({ x: 9, y: 10, color: 'W', moveNumber: 2 }),
       ];
 
       expect(() => {
@@ -372,8 +389,8 @@ describe('canvasUtils', () => {
 
     it('devrait gérer les positions en bordure du plateau', () => {
       const moves: Move[] = [
-        { x: 0, y: 0, color: 'B', moveNumber: 1 }, // Coin supérieur gauche
-        { x: 18, y: 18, color: 'W', moveNumber: 2 }, // Coin inférieur droit
+        createTestMove({ x: 0, y: 0, color: 'B', moveNumber: 1 }), // Coin supérieur gauche
+        createTestMove({ x: 18, y: 18, color: 'W', moveNumber: 2 }), // Coin inférieur droit
       ];
 
       expect(() => {
@@ -383,9 +400,9 @@ describe('canvasUtils', () => {
 
     it('devrait respecter l\'ordre des couleurs alternées', () => {
       const moves: Move[] = [
-        { x: 3, y: 3, color: 'B', moveNumber: 1 },
-        { x: 4, y: 4, color: 'W', moveNumber: 2 },
-        { x: 5, y: 5, color: 'B', moveNumber: 3 },
+        createTestMove({ x: 3, y: 3, color: 'B', moveNumber: 1 }),
+        createTestMove({ x: 4, y: 4, color: 'W', moveNumber: 2 }),
+        createTestMove({ x: 5, y: 5, color: 'B', moveNumber: 3 }),
       ];
 
       renderBoard(ctx as any, canvasSize, moves, moves[2], null, 'W');
@@ -395,7 +412,7 @@ describe('canvasUtils', () => {
 
     it('devrait accepter policy optionnelle sans erreur', () => {
       const moves: Move[] = [
-        { x: 3, y: 3, color: 'B', moveNumber: 1 },
+        createTestMove({ x: 3, y: 3, color: 'B', moveNumber: 1 }),
       ];
 
       expect(() => {
@@ -405,7 +422,7 @@ describe('canvasUtils', () => {
 
     it('devrait appeler drawPolicyHeatmap quand policy fournie', () => {
       const moves: Move[] = [
-        { x: 3, y: 3, color: 'B', moveNumber: 1 },
+        createTestMove({ x: 3, y: 3, color: 'B', moveNumber: 1 }),
       ];
       const policy: number[][] = Array(19).fill(null).map(() => Array(19).fill(0.001));
       policy[9][9] = 0.5;
@@ -435,7 +452,7 @@ describe('canvasUtils', () => {
       policy[9][9] = 0.5; // Intersection libre
 
       const moves: Move[] = [
-        { x: 3, y: 3, color: 'B', moveNumber: 1 },
+        createTestMove({ x: 3, y: 3, color: 'B', moveNumber: 1 }),
       ];
 
       drawPolicyHeatmap(ctx as any, policy, cellSize, moves);
