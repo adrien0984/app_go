@@ -100,6 +100,13 @@ export interface KataGoAnalysisResult {
   /** Liste des meilleurs coups avec leurs évaluations */
   moveInfos: KataGoMoveInfo[];
   
+  /** 
+   * Distribution de probabilité du réseau de neurones (policy network)
+   * Tableau 19x19 avec probabilités pour chaque intersection (0.0-1.0)
+   * Utilisé pour visualisation heatmap et analyse de l'intuition du réseau
+   */
+  policy: number[][];
+  
   /** Niveau de confiance global (0.0-1.0) */
   confidence: number;
   

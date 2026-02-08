@@ -179,5 +179,77 @@ describe('KataGoService', () => {
 
       expect(result.analysisTime).toBeGreaterThan(0);
     });
+
+    it('devrait générer policy 19x19', async () => {
+      const result = await service.analyzePosition(testGame);
+
+      expect(result.policy).toBeDefined();
+      expect(result.policy).toBeInstanceOf(Array);
+      expect(result.policy.length).toBe(19);
+      result.policy.forEach((row) => {
+        expect(row.length).toBe(19);
+      });
+    });
+
+    it('devrait avoir policy normalisée (somme ~1.0)', async () => {
+      const result = await service.analyzePosition(testGame);
+
+      let totalProb = 0;
+      for (let y = 0; y < 19; y++) {
+        for (let x = 0; x < 19; x++) {
+          totalProb += result.policy[y][x];
+        }
+      }
+
+      // Tolérance pour erreurs d'arrondi
+      expect(totalProb).toBeGreaterThan(0.99);
+      expect(totalProb).toBeLessThan(1.01);
+    });
+
+    it('devrait avoir probabilités policy entre 0 et 1', async () => {
+      const result = await service.analyzePosition(testGame);
+
+      result.policy.forEach((row) => {
+        row.forEach((prob) => {
+          expect(prob).toBeGreaterThanOrEqual(0);
+          expect(prob).toBeLessThanOrEqual(1);
+        });
+      });
+    });
+
+    it('devrait avoir policy plus élevée aux top moves', async () => {
+      const result = await service.analyzePosition(testGame);
+
+      // Vérifier que les top moves ont plus forte probabilité
+      const topMove = result.moveInfos[0];
+      const topMoveProb = result.policy[topMove.move.y][topMove.move.x];
+
+      // Chercher probabilité moyenne hors top moves
+      let avgOtherProb = 0;
+      let countOther = 0;
+      for (let y = 0; y < 19; y++) {
+        for (let x = 0; x < 19; x++) {
+          const isTopMove = result.moveInfos.some(
+            (m) => m.move.x === x && m.move.y === y
+          );
+          if (!isTopMove) {
+            avgOtherProb += result.policy[y][x];
+            countOther++;
+          }
+        }
+      }
+      avgOtherProb /= countOther;
+
+      expect(topMoveProb).toBeGreaterThan(avgOtherProb * 10); // Au moins 10x plus
+    });
+
+    it('policy devrait être 0 sur intersections occupées', async () => {
+      const result = await service.analyzePosition(testGame);
+
+      // Vérifier coups joués ont policy = 0
+      testGame.rootMoves.forEach((move) => {
+        expect(result.policy[move.y][move.x]).toBe(0);
+      });
+    });
   });
 });

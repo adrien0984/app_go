@@ -256,6 +256,9 @@ export class KataGoService {
     moveInfos.sort((a, b) => b.winrate - a.winrate);
     const limitedMoveInfos = moveInfos.slice(0, config.topMoves);
 
+    // Générer policy (distribution de probabilité sur tout le plateau)
+    const policy = this.generatePolicyDistribution(boardState, limitedMoveInfos);
+
     return {
       id: uuidv4(),
       timestamp: new Date(),
@@ -267,6 +270,7 @@ export class KataGoService {
         utility: blackWinrate,
       },
       moveInfos: limitedMoveInfos,
+      policy,
       confidence: 0.7 + Math.random() * 0.2, // 70-90%
       analysisTime: 0, // Sera rempli par appelant
     };
@@ -311,6 +315,84 @@ export class KataGoService {
     }
 
     return candidates;
+  }
+
+  /**
+   * Générer distribution de probabilité policy sur tout le plateau
+   * Reflète l'intuition du réseau de neurones avant MCTS
+   * 
+   * @param boardState - État du plateau
+   * @param topMoves - Meilleurs coups identifiés
+   * @returns Matrice 19x19 de probabilités (somme = 1.0)
+   */
+  private generatePolicyDistribution(
+    boardState: BoardState,
+    topMoves: KataGoMoveInfo[]
+  ): number[][] {
+    const size = boardState.size;
+    const policy: number[][] = Array(size)
+      .fill(null)
+      .map(() => Array(size).fill(0));
+
+    // Probabilité de base très faible pour intersections vides
+    const baseProbability = 0.0001;
+    
+    // Affecter probabilités aux meilleurs coups
+    let totalProbability = 0;
+    topMoves.forEach((moveInfo, idx) => {
+      // Décroissance exponentielle : 1er coup = prior élevé, suivants diminuent
+      const prob = moveInfo.prior * Math.pow(0.6, idx);
+      policy[moveInfo.move.y][moveInfo.move.x] = prob;
+      totalProbability += prob;
+    });
+
+    // Ajouter bruit gaussien autour des top moves (diffusion d'influence)
+    topMoves.forEach((moveInfo) => {
+      const { x, y } = moveInfo.move;
+      
+      // Influence sur intersections adjacentes (distance 1-3)
+      for (let dy = -3; dy <= 3; dy++) {
+        for (let dx = -3; dx <= 3; dx++) {
+          if (dx === 0 && dy === 0) continue;
+          
+          const nx = x + dx;
+          const ny = y + dy;
+          
+          // Vérifier limites plateau
+          if (nx >= 0 && nx < size && ny >= 0 && ny < size) {
+            // Vérifier intersection vide
+            if (boardState.stones[ny][nx] === null) {
+              const distance = Math.sqrt(dx * dx + dy * dy);
+              // Influence décroît avec distance (gaussienne)
+              const influence = moveInfo.prior * 0.1 * Math.exp(-distance / 2);
+              policy[ny][nx] += influence;
+              totalProbability += influence;
+            }
+          }
+        }
+      }
+    });
+
+    // Probabilité résiduelle pour autres intersections vides
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        if (boardState.stones[y][x] === null && policy[y][x] === 0) {
+          policy[y][x] = baseProbability;
+          totalProbability += baseProbability;
+        }
+      }
+    }
+
+    // Normaliser pour que somme = 1.0
+    if (totalProbability > 0) {
+      for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+          policy[y][x] /= totalProbability;
+        }
+      }
+    }
+
+    return policy;
   }
 
   /**
