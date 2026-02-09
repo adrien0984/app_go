@@ -110,6 +110,12 @@ export default defineConfig({
   server: {
     port: 5173,
     open: true,
+    headers: {
+      'X-Frame-Options': 'DENY',
+      'X-Content-Type-Options': 'nosniff',
+      'Referrer-Policy': 'strict-origin-when-cross-origin',
+      'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+    },
   },
   test: {
     exclude: [
@@ -122,7 +128,7 @@ export default defineConfig({
   build: {
     target: 'ES2020',
     minify: 'terser',
-    sourcemap: false,
+    sourcemap: false, // Désactivé en prod pour ne pas exposer le code source
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {

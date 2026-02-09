@@ -40,7 +40,17 @@ self.addEventListener('activate', (event: ExtendableEvent) => {
 self.addEventListener('fetch', (event: FetchEvent) => {
   const { request } = event;
 
+  // Sécurité : seules les requêtes GET sont cachées
   if (request.method !== 'GET') {
+    return;
+  }
+
+  // Sécurité : ne pas cacher les requêtes vers d'autres origines non-autorisées
+  const allowedOrigins = [self.location.origin, 'https://cdn.jsdelivr.net'];
+  const requestUrl = new URL(request.url);
+  const isAllowedOrigin = allowedOrigins.some(origin => requestUrl.origin === origin);
+
+  if (!isAllowedOrigin) {
     return;
   }
 
@@ -51,7 +61,13 @@ self.addEventListener('fetch', (event: FetchEvent) => {
       }
 
       return fetch(request).then(response => {
-        if (!response || response.status !== 200 || response.type === 'error') {
+        // Sécurité : ne cacher que les réponses valides (pas opaque, pas erreur)
+        if (
+          !response ||
+          response.status !== 200 ||
+          response.type === 'error' ||
+          response.type === 'opaque'
+        ) {
           return response;
         }
 
@@ -61,6 +77,9 @@ self.addEventListener('fetch', (event: FetchEvent) => {
         });
 
         return response;
+      }).catch(() => {
+        // Sécurité : fallback silencieux en cas d'erreur réseau
+        return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
       });
     })
   );

@@ -15,6 +15,8 @@ i18n
     fallbackLng: 'fr',
     defaultNS: 'common',
     interpolation: {
+      // React échappe déjà le JSX par défaut (protection XSS)
+      // Garde false car React gère l'échappement via JSX
       escapeValue: false,
     },
     detection: {

@@ -235,9 +235,11 @@ class StorageService {
    * Utile au unmount d'un composant pour garantir la sauvegarde
    */
   async flushDebounceTimers(): Promise<void> {
-    const timers = Array.from(this.debounceTimers.values());
+    // Annuler tous les timers en attente pour éviter des fuites mémoire
+    for (const timer of this.debounceTimers.values()) {
+      clearTimeout(timer);
+    }
     this.debounceTimers.clear();
-    // Les timers iront à leur terme naturellement
   }
 }
 

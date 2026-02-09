@@ -51,7 +51,17 @@
       }
     ],
     "prefer-const": "error",
-    "no-var": "error"
+    "no-var": "error",
+    "no-eval": "error",
+    "no-implied-eval": "error",
+    "no-new-func": "error",
+    "no-script-url": "error",
+    "no-param-reassign": ["error", { "props": true, "ignorePropertyModificationsFor": ["state"] }],
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/strict-boolean-expressions": "off",
+    "react/no-danger": "error",
+    "react/jsx-no-target-blank": "error",
+    "react/jsx-no-script-url": "error"
   },
   "settings": {
     "react": {

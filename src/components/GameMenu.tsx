@@ -82,6 +82,17 @@ const GameMenu: React.FC<GameMenuProps> = ({ onGameSelected }) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Sécurité : limiter la taille des fichiers SGF (max 5 Mo)
+    const MAX_SGF_SIZE = 5 * 1024 * 1024;
+    if (file.size > MAX_SGF_SIZE) {
+      setImportMessage({
+        type: 'error',
+        text: t('game:importError') + ' : fichier trop volumineux (max 5 Mo)',
+      });
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
+
     try {
       const content = await file.text();
       const { game, warnings } = SGFService.parse(content);
@@ -204,6 +215,8 @@ const GameMenu: React.FC<GameMenuProps> = ({ onGameSelected }) => {
                 onChange={e => setFormData({ ...formData, title: e.target.value })}
                 placeholder="Titre de la partie"
                 required
+                maxLength={100}
+                autoComplete="off"
               />
             </div>
 
@@ -215,6 +228,8 @@ const GameMenu: React.FC<GameMenuProps> = ({ onGameSelected }) => {
                 value={formData.blackPlayer}
                 onChange={e => setFormData({ ...formData, blackPlayer: e.target.value })}
                 placeholder="Noir"
+                maxLength={50}
+                autoComplete="off"
               />
             </div>
 
@@ -226,6 +241,8 @@ const GameMenu: React.FC<GameMenuProps> = ({ onGameSelected }) => {
                 value={formData.whitePlayer}
                 onChange={e => setFormData({ ...formData, whitePlayer: e.target.value })}
                 placeholder="Blanc"
+                maxLength={50}
+                autoComplete="off"
               />
             </div>
 
@@ -235,8 +252,10 @@ const GameMenu: React.FC<GameMenuProps> = ({ onGameSelected }) => {
                 id="komi"
                 type="number"
                 step="0.5"
+                min="-150"
+                max="150"
                 value={formData.komi}
-                onChange={e => setFormData({ ...formData, komi: parseFloat(e.target.value) })}
+                onChange={e => setFormData({ ...formData, komi: parseFloat(e.target.value) || 0 })}
               />
             </div>
 
