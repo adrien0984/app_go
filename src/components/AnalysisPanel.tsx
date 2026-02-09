@@ -15,6 +15,7 @@ import type { KataGoAnalysisResult, AnalysisStatus, AnalysisProfileId, AnalysisV
 import type { Position } from '@/types/game';
 import { ANALYSIS_PROFILES } from '@/types/katago';
 import VariationViewer from '@/components/VariationViewer';
+import ComparisonPanel from '@/components/ComparisonPanel';
 import './AnalysisPanel.css';
 
 export interface AnalysisPanelProps {
@@ -56,6 +57,7 @@ export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ className = '', on
   const [error, setError] = useState<string | null>(null);
   const [selectedProfile, setSelectedProfile] = useState<AnalysisProfileId>('standard');
   const [selectedVariation, setSelectedVariation] = useState<AnalysisVariation | null>(null);
+  const [showComparison, setShowComparison] = useState(false);
 
   /**
    * Lancer l'analyse de la position courante
@@ -404,6 +406,14 @@ export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ className = '', on
             <span className="meta-item">
               🎯 {formatPercent(result.confidence)} {t('analysis:confidence')}
             </span>
+            <button
+              className="btn btn-sm btn-secondary"
+              onClick={() => setShowComparison(true)}
+              title={t('comparison:title', 'Comparer positions')}
+              aria-label={t('comparison:title', 'Comparer positions')}
+            >
+              📊 {t('comparison:title', 'Comparer')}
+            </button>
           </div>
         </div>
       )}
@@ -419,6 +429,29 @@ export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ className = '', on
                 const letters = 'abcdefghijklmnopqrs';
                 return `${letters[pos.x] || '?'}${pos.y + 1}`;
               }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Comparison Panel Modal */}
+      {showComparison && game && (
+        <div className="comparison-modal-overlay" onClick={() => setShowComparison(false)}>
+          <div className="comparison-modal-content" onClick={(e) => e.stopPropagation()}>
+            <ComparisonPanel
+              gameId={game.id}
+              selectedMoveIndexes={Array.from(
+                { length: Math.min(10, game.rootMoves.length) },
+                (_, i) => i
+              )}
+              onClose={() => setShowComparison(false)}
+              moveNotations={game.rootMoves.reduce(
+                (acc, move, idx) => {
+                  acc[idx] = move.notation || `Move ${idx + 1}`;
+                  return acc;
+                },
+                {} as Record<number, string>
+              )}
             />
           </div>
         </div>

@@ -303,3 +303,104 @@ export interface AnalysisHistoryEntry {
   /** Notes utilisateur sur l'analyse (optionnel) */
   notes?: string;
 }
+
+/**
+ * Enregistrement unique pour comparaison de positions
+ * Représente une position analysée dans un contexte de comparaison
+ */
+export interface ComparisonRecord {
+  /** Index du coup dans la partie (0-based) */
+  moveIndex: number;
+
+  /** Notation du coup (ex: "D3", "Q16") */
+  moveNotation: string;
+
+  /** Winrate pour le joueur Noir (0-1) */
+  blackWinrate: number;
+
+  /** Winrate pour le joueur Blanc (0-1) */
+  whiteWinrate: number;
+
+  /** Score estimé (ex: "N+4.5", "B+2.1") */
+  scoreEstimate: number;
+
+  /** Meilleur coup selon l'analyse */
+  bestMove: string;
+
+  /** Indique si l'analyse est en cache (présente en IndexedDB) */
+  analyzed: boolean;
+
+  /** Timestamp de l'analyse (optionnel) */
+  timestamp?: Date;
+
+  /** Profil d'analyse utilisé (optionnel) */
+  profile?: AnalysisProfileId;
+
+  /** Durée d'analyse en ms (optionnel) */
+  analysisTime?: number;
+}
+
+/**
+ * Résultats de comparaison de plusieurs positions
+ * Utilisé pour afficher le tableau et les graphiques
+ */
+export interface ComparisonResult {
+  /** ID de la partie comparée */
+  gameId: string;
+
+  /** Liste triée des positions comparées */
+  records: ComparisonRecord[];
+
+  /** Timestamp de la génération */
+  generatedAt: Date;
+
+  /** Nombre total de coups analysés */
+  totalAnalyzed: number;
+
+  /** Nombre de coups manquants */
+  totalMissing: number;
+
+  /** Winrate moyen Noir */
+  avgBlackWinrate: number;
+
+  /** Winrate moyen Blanc */
+  avgWhiteWinrate: number;
+
+  /** Score moyen */
+  avgScore: number;
+
+  /** Écart type du score */
+  stdDevScore: number;
+}
+
+/**
+ * Configuration pour un graphe de comparaison
+ */
+export interface ComparisonChartConfig {
+  /** Type de graphe : 'winrate' ou 'score' */
+  type: 'winrate' | 'score';
+
+  /** Titre du graphe */
+  title: string;
+
+  /** Clé i18n pour le titre */
+  titleKey?: string;
+
+  /** Largeur du canvas */
+  width: number;
+
+  /** Hauteur du canvas */
+  height: number;
+
+  /** Couleur pour le joueur Noir */
+  colorBlack: string;
+
+  /** Couleur pour le joueur Blanc */
+  colorWhite: string;
+
+  /** Si true, afficher une légende */
+  showLegend: boolean;
+
+  /** Si true, afficher les valeurs sur les points */
+  showDataLabels: boolean;
+}

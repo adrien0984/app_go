@@ -533,6 +533,31 @@
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
 
+/* Modal overlay pour la comparaison */
+.comparison-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+  padding: 16px;
+}
+
+.comparison-modal-content {
+  background: white;
+  border-radius: 8px;
+  max-width: 900px;
+  max-height: 85vh;
+  overflow-y: auto;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
 @media (max-width: 768px) {
   .topmove-item {
     flex-direction: column;

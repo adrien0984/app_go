@@ -121,5 +121,32 @@
     "loadingError": "Erreur lors du chargement",
     "analysisError": "Erreur lors de l'analyse",
     "ocrError": "Erreur lors de la reconnaissance"
+  },
+  "comparison": {
+    "title": "Comparer positions",
+    "move": "Coup",
+    "blackWr": "Noir WR",
+    "whiteWr": "Blanc WR",
+    "score": "Score",
+    "bestMove": "Meilleur Coup",
+    "status": "Status",
+    "cached": "Cache",
+    "missing": "Manquant",
+    "export": "Exporter",
+    "exportTooltip": "Exporter tableau en CSV",
+    "copy": "Copier",
+    "copyTooltip": "Copier tableau dans le clipboard",
+    "copiedToClipboard": "Tableau copié dans le clipboard",
+    "copyError": "Erreur lors de la copie du tableau",
+    "totalAnalyzed": "Analysés",
+    "totalMissing": "Manquants",
+    "avgBlackWinrate": "Noir Moyen",
+    "avgWhiteWinrate": "Blanc Moyen",
+    "blackPlayer": "Noir",
+    "whitePlayer": "Blanc",
+    "trendTitle": "Tendance du Winrate",
+    "trendChart": "Graphique de tendance",
+    "noSelection": "Aucun coup sélectionné",
+    "info": "Tableau comparant {{count}} positions"
   }
 }

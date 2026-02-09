@@ -121,5 +121,32 @@
     "loadingError": "Error loading game",
     "analysisError": "Error analyzing position",
     "ocrError": "Error recognizing board"
+  },
+  "comparison": {
+    "title": "Compare Positions",
+    "move": "Move",
+    "blackWr": "Black WR",
+    "whiteWr": "White WR",
+    "score": "Score",
+    "bestMove": "Best Move",
+    "status": "Status",
+    "cached": "Cached",
+    "missing": "Missing",
+    "export": "Export",
+    "exportTooltip": "Export table as CSV",
+    "copy": "Copy",
+    "copyTooltip": "Copy table to clipboard",
+    "copiedToClipboard": "Table copied to clipboard",
+    "copyError": "Error copying table",
+    "totalAnalyzed": "Analyzed",
+    "totalMissing": "Missing",
+    "avgBlackWinrate": "Black Avg",
+    "avgWhiteWinrate": "White Avg",
+    "blackPlayer": "Black",
+    "whitePlayer": "White",
+    "trendTitle": "Winrate Trend",
+    "trendChart": "Trend chart",
+    "noSelection": "No moves selected",
+    "info": "Comparing {{count}} positions"
   }
 }
