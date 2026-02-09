@@ -132,6 +132,24 @@ export interface KataGoMoveInfo {
 }
 
 /**
+ * Variation estimée (ligne principale - PV)
+ * Représente la séquence de coups estimée par le réseau de neurones
+ */
+export interface AnalysisVariation {
+  /** Coup principal (déclencheur de cette variation) */
+  mainMove: Position;
+  
+  /** Séquence de coups estimés (15-30 coups max) */
+  pv: Position[];
+  
+  /** Taux de victoire après chaque coup du PV */
+  pvWinrates: number[];
+  
+  /** Écart de score après chaque coup du PV (optionnel) */
+  pvScores?: number[];
+}
+
+/**
  * Résultat complet d'une analyse KataGo
  */
 export interface KataGoAnalysisResult {
@@ -181,6 +199,12 @@ export interface KataGoAnalysisResult {
   
   /** Temps d'analyse en millisecondes */
   analysisTime: number;
+  
+  /**
+   * Variations principales estimées (PV) pour chaque coup recommandé
+   * Optionnel - généré lors de l'analyse complète
+   */
+  variations?: AnalysisVariation[];
 }
 
 /**
@@ -242,4 +266,40 @@ export interface KataGoError {
   code: 'TIMEOUT' | 'WASM_CRASH' | 'INVALID_POSITION' | 'WORKER_ERROR' | 'UNKNOWN';
   message: string;
   details?: any;
+}
+
+/**
+ * Entrée d'historique d'analyse persistée
+ * Utilisée pour tracking analyses passées et comparaison
+ */
+export interface AnalysisHistoryEntry {
+  /** ID unique de l'entrée */
+  id: string;
+
+  /** ID de la partie analysée */
+  gameId: string;
+
+  /** Index du coup analysé dans la partie */
+  moveIndex: number;
+
+  /** Notation SGF du coup (ex: "D3", "Q16") */
+  moveNotation: string;
+
+  /** Profil d'analyse utilisé */
+  profile: AnalysisProfileId;
+
+  /** Date/heure de l'analyse */
+  timestamp: Date;
+
+  /** Durée de l'analyse en millisecondes */
+  analysisTime: number;
+
+  /** Résultat complet de l'analyse */
+  result: KataGoAnalysisResult;
+
+  /** Version de KataGo utilisée (optionnel) */
+  katagoVersion?: string;
+
+  /** Notes utilisateur sur l'analyse (optionnel) */
+  notes?: string;
 }

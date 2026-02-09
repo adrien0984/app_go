@@ -8,7 +8,7 @@ import Board from './Board';
 import AnalysisPanel from './AnalysisPanel';
 import { SGFService } from '@services/SGFService';
 import StorageService from '@services/StorageService';
-import type { KataGoAnalysisResult } from '@/types/katago';
+import type { KataGoAnalysisResult, AnalysisVariation } from '@/types/katago';
 import type { HeatmapMode } from '@/utils/canvasUtils';
 import './GameEditor.css';
 
@@ -25,6 +25,7 @@ const GameEditor: React.FC<GameEditorProps> = ({ onBack }) => {
   // État heatmap
   const [heatmapMode, setHeatmapMode] = useState<HeatmapMode>('none');
   const [analysisResult, setAnalysisResult] = useState<KataGoAnalysisResult | null>(null);
+  const [hoveredVariation, setHoveredVariation] = useState<AnalysisVariation | null>(null);
   const isFirstRender = useRef(true);
 
   // Auto-save debounced : sauvegarde IndexedDB à chaque modification de la partie
@@ -101,6 +102,8 @@ const GameEditor: React.FC<GameEditorProps> = ({ onBack }) => {
             policy={analysisResult?.policy ?? null}
             ownership={analysisResult?.ownership ?? null}
             heatmapMode={heatmapMode}
+            suggestedMoves={analysisResult?.moveInfos ?? []}
+            displayedVariation={hoveredVariation}
           />
 
           {/* Toggle heatmap modes */}
@@ -201,6 +204,7 @@ const GameEditor: React.FC<GameEditorProps> = ({ onBack }) => {
 
           <AnalysisPanel 
             onAnalysisComplete={setAnalysisResult}
+            onVariationHover={setHoveredVariation}
             onMoveSelected={(move) => {
               // Quand un coup proposé est cliqué, l'ajouter au plateau
               // GameEditor gère le dispatch via setAnalysisResult callback

@@ -3,6 +3,7 @@ import gameReducer from './slices/gameSlice';
 import uiReducer from './slices/uiSlice';
 import settingsReducer from './slices/settingsSlice';
 import evaluationsReducer from './slices/evaluationsSlice';
+import analysisHistoryReducer from './slices/analysisHistorySlice';
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
     ui: uiReducer,
     settings: settingsReducer,
     evaluations: evaluationsReducer,
+    analysisHistory: analysisHistoryReducer,
   },
 });
 

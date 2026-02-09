@@ -87,7 +87,19 @@
     "territoryBlack": "Black Territory",
     "territoryWhite": "White Territory",
     "influence": "Influence",
-    "coordinates": "Coordinates"
+    "coordinates": "Coordinates",
+    "variationViewer": "Variation Viewer",
+    "variationTitle": "Estimated Game Line (PV)",
+    "variationInvalid": "Invalid or unavailable variation",
+    "variationKeyboardHelp": "Use ← → to navigate, Escape to close",
+    "totalMoves": "Moves",
+    "avgWinrate": "Average Rate",
+    "maxWinrate": "Best",
+    "minWinrate": "Worst",
+    "prevMove": "Previous Move",
+    "nextMove": "Next Move",
+    "prev": "Previous",
+    "next": "Next"
   },
   "ocr": {
     "uploadPhoto": "Upload Photo",

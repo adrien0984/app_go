@@ -558,3 +558,99 @@ export const renderBoard = (
   drawHighlights(ctx, lastMove, cellSize);
   drawHover(ctx, hoverPosition, cellSize, nextColor);
 };
+
+/**
+ * Dessine les propositions de coups (croix vertes)
+ * Affiche une croix verte (+) sur chaque coup proposé avec label du taux de victoire
+ * 
+ * @param ctx - Contexte Canvas 2D
+ * @param suggestions - Liste des coups suggérés avec leurs stats
+ * @param cellSize - Taille d'une cellule (canvasSize / 19)
+ */
+export const drawSuggestedMoves = (
+  ctx: CanvasRenderingContext2D,
+  suggestions: Array<{ move: Position; winrate: number }>,
+  cellSize: number
+): void => {
+  if (!suggestions || suggestions.length === 0) return;
+
+  suggestions.forEach(({ move, winrate }) => {
+    const { px, py } = goCoordToPixel(move, cellSize);
+    const radius = calculateStoneRadius(cellSize) * 1.2;
+
+    // Dessiner une croix verte
+    ctx.strokeStyle = '#4ade80'; // Vert clair
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+
+    // Croix horizontale et verticale
+    ctx.beginPath();
+    ctx.moveTo(px - radius, py);
+    ctx.lineTo(px + radius, py);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(px, py - radius);
+    ctx.lineTo(px, py + radius);
+    ctx.stroke();
+
+    // Ajouter un label avec le taux de victoire
+    ctx.fillStyle = '#4ade80';
+    ctx.font = 'bold 11px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const label = (winrate * 100).toFixed(0) + '%';
+    ctx.fillText(label, px, py - radius - 12);
+  });
+};
+
+/**
+ * Dessine une séquence de variation (PV) avec numéros
+ * Affiche les coups de la PV numérotés de 1 à N sur le plateau
+ * 
+ * @param ctx - Contexte Canvas 2D
+ * @param pv - Séquence de positions de la variation
+ * @param cellSize - Taille d'une cellule (canvasSize / 19)
+ * @param existingMoves - Coups existants (pour savoir quels coups ignorer)
+ */
+export const drawVariationSequence = (
+  ctx: CanvasRenderingContext2D,
+  pv: Position[],
+  cellSize: number,
+  existingMoves: Move[] = []
+): void => {
+  if (!pv || pv.length === 0) return;
+
+  // Créer une map des coups existants pour éviter les collisions
+  const existingSet = new Set(
+    existingMoves.map((m) => `${m.position.x},${m.position.y}`)
+  );
+
+  pv.forEach((position, index) => {
+    // Ignorer si le coup existe déjà
+    if (existingSet.has(`${position.x},${position.y}`)) {
+      return;
+    }
+
+    const { px, py } = goCoordToPixel(position, cellSize);
+    const moveNumber = index + 1;
+    const isBlackMove = moveNumber % 2 === 1;
+
+    // Cercle de fond pour le numéro
+    const radius = calculateStoneRadius(cellSize) * 0.8;
+    ctx.beginPath();
+    ctx.arc(px, py, radius, 0, Math.PI * 2);
+    ctx.fillStyle = isBlackMove ? '#1a1a1a' : '#ffffff';
+    ctx.fill();
+    ctx.strokeStyle = '#666666';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Numéro du coup
+    ctx.fillStyle = isBlackMove ? '#ffffff' : '#1a1a1a';
+    ctx.font = 'bold 10px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(moveNumber.toString(), px, py);
+  });
+};

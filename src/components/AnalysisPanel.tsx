@@ -11,9 +11,10 @@ import type { RootState } from '@/store';
 import { addMove } from '@/store/slices/gameSlice';
 import { setEvaluation } from '@/store/slices/evaluationsSlice';
 import KataGoService from '@/services/KataGoService';
-import type { KataGoAnalysisResult, AnalysisStatus, AnalysisProfileId } from '@/types/katago';
+import type { KataGoAnalysisResult, AnalysisStatus, AnalysisProfileId, AnalysisVariation } from '@/types/katago';
 import type { Position } from '@/types/game';
 import { ANALYSIS_PROFILES } from '@/types/katago';
+import VariationViewer from '@/components/VariationViewer';
 import './AnalysisPanel.css';
 
 export interface AnalysisPanelProps {
@@ -23,6 +24,8 @@ export interface AnalysisPanelProps {
   onAnalysisComplete?: (result: KataGoAnalysisResult) => void;
   /** Callback quand un coup suggéré est sélectionné */
   onMoveSelected?: (move: Position) => void;
+  /** Callback quand on survole une variation */
+  onVariationHover?: (variation: AnalysisVariation | null) => void;
 }
 
 /**
@@ -35,12 +38,13 @@ export interface AnalysisPanelProps {
  * - Loading state avec spinner
  * - Gestion erreurs
  * - Badge "Ancienne" si analyse > 7 jours
+ * - Visualisation des variations (PV)
  * 
  * @component
  * @example
  * <AnalysisPanel />
  */
-export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ className = '', onAnalysisComplete, onMoveSelected }) => {
+export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ className = '', onAnalysisComplete, onMoveSelected, onVariationHover }) => {
   const { t } = useTranslation(['common', 'analysis']);
   const dispatch = useDispatch();
 
@@ -51,6 +55,7 @@ export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ className = '', on
   const [result, setResult] = useState<KataGoAnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedProfile, setSelectedProfile] = useState<AnalysisProfileId>('standard');
+  const [selectedVariation, setSelectedVariation] = useState<AnalysisVariation | null>(null);
 
   /**
    * Lancer l'analyse de la position courante
@@ -149,6 +154,43 @@ export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ className = '', on
       // Si on n'est pas à la fin, afficher un message
       console.info('[AnalysisPanel] Pour jouer ce coup, retournez à la fin de la partie');
     }
+  };
+
+  /**
+   * Générer une variation fictive pour un coup (mode MVP simulation)
+   */
+  const generateMockVariation = (moveInfo: any): AnalysisVariation | null => {
+    if (!result) return null;
+
+    // Générer une séquence de coups fictive basée sur le coup principal
+    const pv: Position[] = [];
+    const pvWinrates: number[] = [];
+    const pvScores: number[] = [];
+
+    // Ajouter le coup principal
+    pv.push(moveInfo.move);
+    pvWinrates.push(moveInfo.winrate);
+    pvScores.push(moveInfo.winrate > 0.5 ? 5 - moveInfo.winrate * 2 : -5 + moveInfo.winrate * 2);
+
+    // Générer 10-15 coups supplémentaires fictifs
+    for (let i = 1; i < 12; i++) {
+      const x = (moveInfo.move.x + i * 2) % 19;
+      const y = (moveInfo.move.y + i) % 19;
+      pv.push({ x, y });
+
+      // Vari le taux de victoire légèrement autour du coup principal
+      const variance = (Math.random() - 0.5) * 0.1;
+      const newWinrate = Math.max(0.1, Math.min(0.9, moveInfo.winrate + variance * (1 - i / 20)));
+      pvWinrates.push(newWinrate);
+      pvScores.push(newWinrate > 0.5 ? 5 - newWinrate * 2 : -5 + newWinrate * 2);
+    }
+
+    return {
+      mainMove: moveInfo.move,
+      pv,
+      pvWinrates,
+      pvScores,
+    };
   };
 
   // Pas de jeu → afficher placeholder
@@ -307,27 +349,45 @@ export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ className = '', on
                 <div
                   key={`${moveInfo.move.x}-${moveInfo.move.y}`}
                   className="topmove-item"
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => handleMoveSelect(moveInfo.move)}
-                  onKeyDown={(e) => {
+                >
+                  <div className="topmove-content" role="button" tabIndex={0} onClick={() => handleMoveSelect(moveInfo.move)} onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
                       handleMoveSelect(moveInfo.move);
                     }
-                  }}
-                  title={`Jouer ${moveInfo.moveSGF} (${(moveInfo.winrate * 100).toFixed(1)}%)`}
-                >
-                  <span className="topmove-rank">#{idx + 1}</span>
-                  <span className="topmove-coords">{moveInfo.moveSGF}</span>
-                  <div className="topmove-stats">
-                    <span className="topmove-winrate">
-                      {formatPercent(moveInfo.winrate)}
-                    </span>
-                    <span className="topmove-visits">
-                      {moveInfo.visits} {t('analysis:visits')}
-                    </span>
+                  }} title={`Jouer ${moveInfo.moveSGF} (${(moveInfo.winrate * 100).toFixed(1)}%)`}>
+                    <span className="topmove-rank">#{idx + 1}</span>
+                    <span className="topmove-coords">{moveInfo.moveSGF}</span>
+                    <div className="topmove-stats">
+                      <span className="topmove-winrate">
+                        {formatPercent(moveInfo.winrate)}
+                      </span>
+                      <span className="topmove-visits">
+                        {moveInfo.visits} {t('analysis:visits')}
+                      </span>
+                    </div>
                   </div>
+                  <button
+                    className="btn btn-sm btn-variation"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const variation = generateMockVariation(moveInfo);
+                      if (variation) {
+                        setSelectedVariation(variation);
+                      }
+                    }}
+                    onMouseEnter={() => {
+                      const variation = generateMockVariation(moveInfo);
+                      if (variation) {
+                        onVariationHover?.(variation);
+                      }
+                    }}
+                    onMouseLeave={() => onVariationHover?.(null)}
+                    title={t('analysis:variationTitle')}
+                    aria-label={`${t('analysis:variationTitle')} pour ${moveInfo.moveSGF}`}
+                  >
+                    📊 PV
+                  </button>
                 </div>
               ))}
             </div>
@@ -344,6 +404,22 @@ export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ className = '', on
             <span className="meta-item">
               🎯 {formatPercent(result.confidence)} {t('analysis:confidence')}
             </span>
+          </div>
+        </div>
+      )}
+
+      {/* Variation Viewer Modal */}
+      {selectedVariation && (
+        <div className="variation-modal-overlay" onClick={() => setSelectedVariation(null)}>
+          <div className="variation-modal-content" onClick={(e) => e.stopPropagation()}>
+            <VariationViewer
+              variation={selectedVariation}
+              onClose={() => setSelectedVariation(null)}
+              positionToSGF={(pos: Position) => {
+                const letters = 'abcdefghijklmnopqrs';
+                return `${letters[pos.x] || '?'}${pos.y + 1}`;
+              }}
+            />
           </div>
         </div>
       )}

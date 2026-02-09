@@ -20,10 +20,13 @@ import {
   drawHover,
   drawPolicyHeatmap,
   drawOwnershipMap,
+  drawSuggestedMoves,
+  drawVariationSequence,
 } from '@/utils/canvasUtils';
 import type { HeatmapMode } from '@/utils/canvasUtils';
 import { pixelToGoCoord, calculateCanvasSize } from '@/utils/boardUtils';
 import type { Position } from '@/types/game';
+import type { KataGoMoveInfo, AnalysisVariation } from '@/types/katago';
 import './Board.css';
 
 export interface BoardProps {
@@ -34,6 +37,12 @@ export interface BoardProps {
   ownership?: number[][] | null;
   /** Mode de heatmap à afficher */
   heatmapMode?: HeatmapMode;
+  /** Coups proposés par l'analyse (affichage croix vertes) */
+  suggestedMoves?: KataGoMoveInfo[];
+  /** Variation à afficher sur le plateau */
+  displayedVariation?: AnalysisVariation | null;
+  /** Callback quand on survole une position */
+  onPositionHover?: (position: Position | null) => void;
 }
 
 /**
@@ -52,7 +61,15 @@ export interface BoardProps {
  * @example
  * <Board className="my-board" />
  */
-export const Board: React.FC<BoardProps> = ({ className = '', policy = null, ownership = null, heatmapMode = 'none' }) => {
+export const Board: React.FC<BoardProps> = ({
+  className = '',
+  policy = null,
+  ownership = null,
+  heatmapMode = 'none',
+  suggestedMoves = [],
+  displayedVariation = null,
+  onPositionHover,
+}) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const rafIdRef = useRef<number | null>(null);
@@ -61,6 +78,7 @@ export const Board: React.FC<BoardProps> = ({ className = '', policy = null, own
   const [hoverPosition, setHoverPosition] = useState<Position | null>(null);
   const [canvasSize, setCanvasSize] = useState(760);
   const [keyboardCursor, setKeyboardCursor] = useState<Position | null>(null);
+  const [hoveredSuggestion, setHoveredSuggestion] = useState<AnalysisVariation | null>(null);
 
   // Redux
   const dispatch = useDispatch();
@@ -218,6 +236,21 @@ export const Board: React.FC<BoardProps> = ({ className = '', policy = null, own
       drawHighlights(ctx, lastMove, cellSize);
       drawHover(ctx, hoverPosition, cellSize, nextColor);
 
+      // Layer suggestions (croix vertes pour coups proposés)
+      if (suggestedMoves && suggestedMoves.length > 0) {
+        drawSuggestedMoves(
+          ctx,
+          suggestedMoves.map((m) => ({ move: m.move, winrate: m.winrate })),
+          cellSize
+        );
+      }
+
+      // Layer variation (numéros 1-N pour la PV)
+      const variationToDisplay = hoveredSuggestion || displayedVariation;
+      if (variationToDisplay && variationToDisplay.pv && variationToDisplay.pv.length > 0) {
+        drawVariationSequence(ctx, variationToDisplay.pv, cellSize, moves);
+      }
+
       // Schedule next frame
       rafIdRef.current = requestAnimationFrame(render);
     };
@@ -231,7 +264,18 @@ export const Board: React.FC<BoardProps> = ({ className = '', policy = null, own
         cancelAnimationFrame(rafIdRef.current);
       }
     };
-  }, [game, currentMoveIndex, hoverPosition, canvasSize, policy, ownership, heatmapMode]);
+  }, [
+    game,
+    currentMoveIndex,
+    hoverPosition,
+    canvasSize,
+    policy,
+    ownership,
+    heatmapMode,
+    suggestedMoves,
+    displayedVariation,
+    hoveredSuggestion,
+  ]);
 
   /**
    * Handler : Click sur intersection

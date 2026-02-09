@@ -1,0 +1,249 @@
+/* Analysis History Component Styles */
+
+.analysis-history {
+  padding: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  background: #f9f9f9;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.history-empty {
+  text-align: center;
+  color: #999;
+  padding: 1rem;
+  font-style: italic;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #2c3e50;
+  padding-bottom: 0.5rem;
+}
+
+.history-header h4 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.history-count {
+  background: #3498db;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Statistiques résumées */
+.history-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: white;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  color: #666;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+/* Liste des analyses */
+.history-list {
+  max-height: 300px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.history-entry {
+  padding: 0.75rem;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  border-left: 3px solid transparent;
+}
+
+.history-entry:hover {
+  background: #f0f8ff;
+  border-color: #3498db;
+  border-left-color: #3498db;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.history-entry.latest {
+  border-left-color: #27ae60;
+  background: #f0fff4;
+}
+
+.entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  gap: 0.5rem;
+}
+
+.entry-move {
+  font-weight: 700;
+  color: #2c3e50;
+  font-size: 0.95rem;
+  min-width: 30px;
+}
+
+.entry-profile {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.4rem;
+  background: #ecf0f1;
+  border-radius: 3px;
+  color: #555;
+  text-transform: uppercase;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.entry-results {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  gap: 0.75rem;
+}
+
+.entry-winrate {
+  flex: 1;
+  text-align: center;
+  padding: 0.25rem 0.5rem;
+  background: #f0f0f0;
+  border-radius: 3px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.entry-score {
+  flex: 1;
+  text-align: center;
+  padding: 0.25rem 0.5rem;
+  background: #f0f0f0;
+  border-radius: 3px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.entry-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.entry-time {
+  font-size: 0.75rem;
+  color: #999;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  background: #ecf0f1;
+  color: #555;
+  font-weight: 600;
+}
+
+.btn-sm:hover {
+  background: #bdc3c7;
+  color: white;
+}
+
+.btn-danger {
+  background: #e74c3c;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #c0392b;
+}
+
+/* Badge pour analyses anciennes */
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge-old {
+  background: #fff3cd;
+  color: #856404;
+  flex-shrink: 0;
+}
+
+/* Scrollbar custom */
+.history-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.history-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.history-list::-webkit-scrollbar-thumb {
+  background: #bdc3c7;
+  border-radius: 3px;
+}
+
+.history-list::-webkit-scrollbar-thumb:hover {
+  background: #95a5a6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .history-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .history-list {
+    max-height: 200px;
+  }
+
+  .entry-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .entry-results {
+    flex-direction: column;
+  }
+}

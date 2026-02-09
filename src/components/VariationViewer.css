@@ -1,0 +1,379 @@
+/**
+ * Styles pour le composant VariationViewer
+ * Affichage et navigation dans les variations (PV)
+ */
+
+.variation-viewer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  max-width: 100%;
+  font-family: inherit;
+}
+
+.variation-viewer:focus {
+  outline: 2px solid #0066cc;
+  outline-offset: 2px;
+}
+
+/* Header */
+.variation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.variation-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #212529;
+}
+
+.btn-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: #e9ecef;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  color: #495057;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-close:hover:not(:disabled) {
+  background: #dee2e6;
+  color: #212529;
+}
+
+.btn-close:focus {
+  outline: 2px solid #0066cc;
+  outline-offset: -2px;
+}
+
+.btn-close:active:not(:disabled) {
+  background: #ced4da;
+}
+
+/* Stats grid */
+.variation-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  padding: 12px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6c757d;
+  text-transform: uppercase;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0066cc;
+}
+
+/* Navigation controls */
+.variation-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-nav {
+  padding: 8px 12px;
+  background: #0066cc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  white-space: nowrap;
+}
+
+.btn-nav:hover:not(:disabled) {
+  background: #0052a3;
+  box-shadow: 0 2px 4px rgba(0, 102, 204, 0.3);
+}
+
+.btn-nav:focus {
+  outline: 2px solid #0066cc;
+  outline-offset: 2px;
+}
+
+.btn-nav:active:not(:disabled) {
+  background: #003d7a;
+}
+
+.btn-nav:disabled {
+  background: #cce0ff;
+  color: #80b5ff;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-prev,
+.btn-next {
+  flex: 0 1 auto;
+  min-width: 80px;
+}
+
+/* Position info */
+.variation-position {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+  flex: 1 1 auto;
+  min-width: 200px;
+}
+
+.position-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #212529;
+}
+
+.position-winrate {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0066cc;
+  min-width: 50px;
+  text-align: right;
+}
+
+.position-score {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6c757d;
+  min-width: 50px;
+  text-align: right;
+}
+
+/* Moves list */
+.variation-moves {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 8px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.variation-move {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  color: #495057;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  text-align: left;
+}
+
+.variation-move:hover {
+  background: #e9ecef;
+}
+
+.variation-move:focus {
+  outline: 2px solid #0066cc;
+  outline-offset: -2px;
+}
+
+.variation-move.selected {
+  background: #cce0ff;
+  border-color: #0066cc;
+  font-weight: 600;
+  color: #003d7a;
+}
+
+.move-color {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+}
+
+.move-color.black {
+  background: #1a1a1a;
+}
+
+.move-color.white {
+  background: #ffffff;
+  border: 2px solid #495057;
+  color: #1a1a1a;
+}
+
+.move-coords {
+  font-family: 'Courier New', monospace;
+  font-weight: 500;
+  min-width: 40px;
+}
+
+.move-winrate {
+  flex: 1;
+  text-align: right;
+  font-weight: 600;
+  color: #0066cc;
+  min-width: 50px;
+}
+
+.move-score {
+  text-align: right;
+  color: #6c757d;
+  font-size: 13px;
+  min-width: 50px;
+}
+
+/* Error state */
+.variation-error {
+  background: #f8d7da;
+  border-color: #f5c6cb;
+  color: #721c24;
+  padding: 12px;
+  border-radius: 4px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.variation-error-message {
+  font-weight: 500;
+}
+
+/* Help text */
+.variation-help {
+  padding: 8px 10px;
+  background: #e7f3ff;
+  border-left: 3px solid #0066cc;
+  border-radius: 3px;
+  color: #004085;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* Scrollbar styling */
+.variation-moves::-webkit-scrollbar {
+  width: 6px;
+}
+
+.variation-moves::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.variation-moves::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 3px;
+}
+
+.variation-moves::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .variation-viewer {
+    padding: 12px;
+    gap: 10px;
+  }
+  
+  .variation-controls {
+    flex-direction: column;
+  }
+  
+  .btn-nav {
+    width: 100%;
+  }
+  
+  .variation-position {
+    width: 100%;
+    min-width: auto;
+  }
+  
+  .variation-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .variation-moves {
+    max-height: 250px;
+  }
+  
+  .move-score {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .variation-viewer {
+    padding: 10px;
+  }
+  
+  .variation-title {
+    font-size: 14px;
+  }
+  
+  .variation-position {
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  .position-winrate,
+  .position-score {
+    min-width: auto;
+    text-align: center;
+  }
+  
+  .variation-move {
+    padding: 6px 8px;
+    font-size: 13px;
+  }
+  
+  .move-color {
+    width: 24px;
+    height: 24px;
+    font-size: 11px;
+  }
+}

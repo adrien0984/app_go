@@ -87,7 +87,19 @@
     "territoryBlack": "Territoire Noir",
     "territoryWhite": "Territoire Blanc",
     "influence": "Influence",
-    "coordinates": "Coordonnées"
+    "coordinates": "Coordonnées",
+    "variationViewer": "Visualiseur de Variations",
+    "variationTitle": "Ligne de Jeu Estimée (PV)",
+    "variationInvalid": "Variation invalide ou non disponible",
+    "variationKeyboardHelp": "Utilisez ← → pour naviguer, Échap pour fermer",
+    "totalMoves": "Coups",
+    "avgWinrate": "Taux Moyen",
+    "maxWinrate": "Meilleur",
+    "minWinrate": "Pire",
+    "prevMove": "Coup Précédent",
+    "nextMove": "Coup Suivant",
+    "prev": "Précédent",
+    "next": "Suivant"
   },
   "ocr": {
     "uploadPhoto": "Télécharger Photo",
