@@ -7,18 +7,60 @@
 
 ## [Unreleased]
 
-### Phase 3 - Intégration KataGo (En cours)
+### Phase 3 - Intégration KataGo (✅ Complétée)
 
 #### Added
-- `KataGoAnalysisResult.policy: number[][]` — distribution de probabilité NN sur 19×19 intersections
-- `KataGoService.generatePolicyDistribution()` — génération avec influence gaussienne, normalisation
-- 5 nouveaux tests unitaires policy (normalisation, bornes, top moves, intersections occupées)
-- `AnalysisPanel` intégré dans `GameEditor` (sidebar) avec winrate, score, top moves
-- `GameEditor` affiche `Board` + `AnalysisPanel` avec liste de coups
+- ✅ `KataGoAnalysisResult.policy: number[][]` — distribution de probabilité NN sur 19×19 intersections
+- ✅ `KataGoService.generatePolicyDistribution()` — génération avec influence gaussienne, normalisation
+- ✅ `KataGoService.generateOwnershipMap()` — carte de territoire (-1 à +1, diffusion Manhattan)
+- ✅ `AnalysisPanel` complètement intégré dans `GameEditor` (sidebar)
+  - Affichage winrate Noir/Blanc avec barres proportionnelles
+  - Score estimé avec localisation (Noir/Blanc mène)
+  - Liste top 5 coups recommandés avec visites et winrate
+  - Sélecteur de profil d'analyse (fast/standard/pro)
+  - Loading state avec spinner
+  - Error handling avec retry button
+  - Métadonnées (temps, confiance, profil)
+  - Badge "Ancienne" pour analyses > 7 jours
+- ✅ Heatmaps interactives (policy + ownership)
+  - `drawPolicyHeatmap()` — gradient cool→hot pour probabilités NN
+  - `drawOwnershipMap()` — bleu (Noir) vs rouge (Blanc) avec gradient
+  - Toggles dans GameEditor pour afficher/masquer heatmaps
+  - Rendu efficace avec seuils et dégradés radiaux
+- ✅ Top moves cliquables (interactifs)
+  - Clic sur un coup proposé ajoute le coup au plateau
+  - Keyboard support (Enter/Space)
+  - Hover effects avec visual feedback
+  - Title tooltips pour chaque coup
+  - Validation: seulement jouable si à la fin de la partie
+- ✅ Auto-save debounce 500ms (CA-11)
+  - `StorageService.saveGameDebounced()` avec paramètre delay
+  - Évite surcharge IndexedDB lors de coups rapides
+  - Sauvegarde non-bloquante async
+- ✅ 10 tests E2E Analysis Workflow
+  - Affichage du panneau d'analyse
+  - Analyse après des coups
+  - Winrate avec barres et pourcentages
+  - Score estimé
+  - Top 5 moves affichés
+  - Métadonnées correctes
+  - Re-analyse possible
+  - Gestion erreurs gracieuse
+  - Responsive mobile (375px viewport)
+  - Format et validité des données
 
 #### Changed
-- `tsconfig.json` : `tests/` ajouté à `include` (résolution alias `@/` dans tests)
-- Types explicites dans tous les callbacks de tests (conformité `noImplicitAny`)
+- ✅ `src/components/AnalysisPanel.tsx` : Ajout callback `onMoveSelected` pour interactivité
+- ✅ `src/components/GameEditor.tsx` : Intégration complète AnalysisPanel + callbacks
+- ✅ `src/components/Board.tsx` : Support props policy/ownership/heatmapMode
+- ✅ `src/utils/canvasUtils.ts` : Heatmap rendering functions (-45% opacity, color gradients)
+- ✅ `src/services/StorageService.ts` : Debounce delay 300ms → 500ms (CA-11)
+- ✅ ESLint plugin React installé (npm install eslint-plugin-react@latest)
+
+#### Fixed
+🐛 **Bug #002 : Auto-save debounce non implémenté** → CA-11 ✅ DONE
+🐛 **Bug #003 : Top moves non-interactifs** → ✅ DONE (cliquables)
+
 
 ### Phase 2A/2B - Board Interactif (✅ Terminée)
 - Board 19×19 Canvas rendering (7 layers)

@@ -8,9 +8,11 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '@/store';
+import { addMove } from '@/store/slices/gameSlice';
 import { setEvaluation } from '@/store/slices/evaluationsSlice';
 import KataGoService from '@/services/KataGoService';
 import type { KataGoAnalysisResult, AnalysisStatus, AnalysisProfileId } from '@/types/katago';
+import type { Position } from '@/types/game';
 import { ANALYSIS_PROFILES } from '@/types/katago';
 import './AnalysisPanel.css';
 
@@ -19,6 +21,8 @@ export interface AnalysisPanelProps {
   className?: string;
   /** Callback quand une analyse est terminée */
   onAnalysisComplete?: (result: KataGoAnalysisResult) => void;
+  /** Callback quand un coup suggéré est sélectionné */
+  onMoveSelected?: (move: Position) => void;
 }
 
 /**
@@ -36,7 +40,7 @@ export interface AnalysisPanelProps {
  * @example
  * <AnalysisPanel />
  */
-export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ className = '', onAnalysisComplete }) => {
+export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ className = '', onAnalysisComplete, onMoveSelected }) => {
   const { t } = useTranslation(['common', 'analysis']);
   const dispatch = useDispatch();
 
@@ -126,6 +130,25 @@ export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ className = '', on
   const formatScore = (value: number): string => {
     const sign = value > 0 ? '+' : '';
     return sign + value.toFixed(1);
+  };
+
+  /**
+   * Gestionnaire : Clic sur un coup proposé
+   * Ajoute le coup au plateau
+   */
+  const handleMoveSelect = (move: Position) => {
+    if (game && currentMoveIndex === game.rootMoves.length) {
+      // Seul le dernier coup peut être suivi d'un nouveau coup
+      if (onMoveSelected) {
+        onMoveSelected(move);
+      } else {
+        // Fallback : ajouter directement via Redux
+        dispatch(addMove(move));
+      }
+    } else {
+      // Si on n'est pas à la fin, afficher un message
+      console.info('[AnalysisPanel] Pour jouer ce coup, retournez à la fin de la partie');
+    }
   };
 
   // Pas de jeu → afficher placeholder
@@ -284,6 +307,16 @@ export const AnalysisPanel: React.FC<AnalysisPanelProps> = ({ className = '', on
                 <div
                   key={`${moveInfo.move.x}-${moveInfo.move.y}`}
                   className="topmove-item"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => handleMoveSelect(moveInfo.move)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleMoveSelect(moveInfo.move);
+                    }
+                  }}
+                  title={`Jouer ${moveInfo.moveSGF} (${(moveInfo.winrate * 100).toFixed(1)}%)`}
                 >
                   <span className="topmove-rank">#{idx + 1}</span>
                   <span className="topmove-coords">{moveInfo.moveSGF}</span>

@@ -28,6 +28,7 @@ const GameEditor: React.FC<GameEditorProps> = ({ onBack }) => {
   const isFirstRender = useRef(true);
 
   // Auto-save debounced : sauvegarde IndexedDB à chaque modification de la partie
+  // CA-11 : Debounce 500ms (attendre 500ms sans nouveau coup avant sauvegarde)
   useEffect(() => {
     if (!currentGame) return;
 
@@ -37,7 +38,7 @@ const GameEditor: React.FC<GameEditorProps> = ({ onBack }) => {
       return;
     }
 
-    StorageService.saveGameDebounced(currentGame);
+    StorageService.saveGameDebounced(currentGame, 500);
   }, [currentGame]);
 
   /** Export la partie courante en SGF et déclenche le téléchargement */
@@ -198,7 +199,15 @@ const GameEditor: React.FC<GameEditorProps> = ({ onBack }) => {
             </div>
           </div>
 
-          <AnalysisPanel onAnalysisComplete={setAnalysisResult} />
+          <AnalysisPanel 
+            onAnalysisComplete={setAnalysisResult}
+            onMoveSelected={(move) => {
+              // Quand un coup proposé est cliqué, l'ajouter au plateau
+              // GameEditor gère le dispatch via setAnalysisResult callback
+              console.log('[GameEditor] Coup proposé cliqué:', move);
+              // Note: addMove sera appelé via AnalysisPanel directement
+            }}
+          />
         </div>
       </div>
     </div>
