@@ -22,6 +22,18 @@
   - Error handling avec retry button
   - Métadonnées (temps, confiance, profil)
   - Badge "Ancienne" pour analyses > 7 jours
+- ✅ Historique d'analyses (US-13)
+  - `analysisHistorySlice` avec limite 100 entrées par partie
+  - Composant `AnalysisHistory` + statistiques (winrate, score, temps)
+  - Suppression d'entrées et indicateur d'ancienneté
+- ✅ Visualisation des variations (US-11)
+  - Composant `VariationViewer` avec navigation clavier
+  - Statistiques de PV (moyenne, min, max)
+  - Affichage modal intégré dans `AnalysisPanel`
+- ✅ Comparaison de positions (US-12)
+  - `ComparisonPanel` avec tableau côte-à-côte et badges cache/manquant
+  - Export CSV + copie clipboard
+  - Graphique SVG de tendance winrate Noir/Blanc
 - ✅ Heatmaps interactives (policy + ownership)
   - `drawPolicyHeatmap()` — gradient cool→hot pour probabilités NN
   - `drawOwnershipMap()` — bleu (Noir) vs rouge (Blanc) avec gradient
@@ -56,6 +68,11 @@
 - ✅ `src/utils/canvasUtils.ts` : Heatmap rendering functions (-45% opacity, color gradients)
 - ✅ `src/services/StorageService.ts` : Debounce delay 300ms → 500ms (CA-11)
 - ✅ ESLint plugin React installé (npm install eslint-plugin-react@latest)
+- ✅ `src/components/AnalysisPanel.tsx` : Ajout bouton de comparaison + modal US-12
+- ✅ `src/components/Board.tsx` : Rendu suggestions et variations (croix vertes + numéros)
+- ✅ `src/utils/canvasUtils.ts` : Nouvelles couches de rendu (suggestions, variations)
+- ✅ `src/types/katago.ts` : Types US-11/12/13 ajoutés (variations, historique, comparaison)
+- ✅ i18n FR/EN : nouvelles clés pour variations, historique, comparaison
 
 #### Fixed
 🐛 **Bug #002 : Auto-save debounce non implémenté** → CA-11 ✅ DONE
