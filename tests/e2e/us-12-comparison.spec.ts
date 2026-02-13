@@ -5,19 +5,21 @@
 
 import { test, expect } from '@playwright/test';
 
+const createNewGame = async (page: any, title: string) => {
+  await page.getByRole('button', { name: /Nouvelle Partie/i }).click();
+  await page.getByLabel(/Titre/i).fill(title);
+  await page.getByRole('button', { name: /Enregistrer/i }).click();
+  await page.waitForSelector('canvas.board-canvas', { timeout: 5000 });
+};
+
 test.describe('US-12: Comparer positions analysées', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('http://localhost:5173');
-    // Attendre le chargement de l'app
     await page.waitForLoadState('networkidle');
   });
 
   test('CA-1: Affiche le panneau de comparaison', async ({ page }) => {
-    // Ouvrir menu Game ->Nouvelle partie
-    await page.click('text=Nouvelle Partie');
-    
-    // Attendre le plateau
-    await page.waitForSelector('canvas.board-canvas', { timeout: 5000 });
+    await createNewGame(page, 'Test Comparison');
     
     // Simuler l'ajout de coups (via API ou UI)
     // Ceci dépend de votre implémentation réelle
